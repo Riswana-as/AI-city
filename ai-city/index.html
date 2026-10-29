@@ -92,7 +92,7 @@ textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;ali
 </head>
 <body>
 <div id="stage"></div><div id="labels"></div>
-<div id="lc"><div class="p" id="hud"><div><b>AI City</b><small>Simulated orchestrator</small></div><div><b id="hb">42</b><small>bots</small></div><div><b id="ha">0</b><small>on tasks</small></div><div><b id="ht">0</b><small>running</small></div><button class="g" id="zi" aria-label="Zoom in">+</button><button class="g" id="zo" aria-label="Zoom out">−</button><button class="g" id="rv">Overview</button></div>
+<div id="lc"><div class="p" id="hud"><div><b>AI City</b><small>Simulated orchestrator</small></div><div><b id="hb">42</b><small>bots</small></div><div><b id="ha">0</b><small>on tasks</small></div><div><b id="ht">0</b><small>running</small></div><button class="g" id="zi" aria-label="Zoom in">+</button><button class="g" id="zo" aria-label="Zoom out">−</button><button class="g" id="rv">Overview</button><button class="g" id="sb-cloud" aria-label="Supabase Status" style="display:flex;align-items:center;gap:6px"><span class="dot" id="sb-dot" style="background:#ff9f6b;margin:0"></span><span id="sb-text">Supabase</span></button></div>
 <div class="p" id="wm" role="group" aria-label="World mode"></div></div>
 <button class="p" id="sb" aria-expanded="true" aria-label="Show or hide the tasks panel">Hide panel</button>
 <div class="p" id="info"></div>
@@ -149,8 +149,63 @@ textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;ali
     <button class="g" id="tm-filter-feed">Filter activity feed</button>
   </div>
 </div>
+<div id="sm-backdrop" style="display:none;position:fixed;inset:0;background:rgba(5,9,20,.65);backdrop-filter:blur(4px);z-index:90"></div>
+<div id="sm" class="p" role="dialog" aria-modal="true" aria-label="Supabase Cloud Synchronization" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(620px,calc(100vw - 32px));max-height:85vh;background:#0d1224;border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:95;flex-direction:column;overflow:hidden">
+  <div class="tm-head" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:#111730">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:8px;background:rgba(61,220,151,.15);border:1px solid rgba(61,220,151,.4);display:flex;align-items:center;justify-content:center;color:#3ddc97;font-weight:bold;font-size:14px">⚡</div>
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--tx)">Supabase Cloud Integration</h3>
+        <small style="color:var(--mut);font-size:11px">Project: <code style="color:#3ddc97">Not configured (Local & WS Mode)</code></small>
+      </div>
+    </div>
+    <button class="g" id="sm-close" aria-label="Close" style="padding:4px 9px">✕</button>
+  </div>
+  <div class="tm-body" style="padding:16px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px">
+    <div class="tm-sec" style="background:#131a38;border:1px solid var(--line);border-radius:8px;padding:12px">
+      <h4 style="margin:0 0 8px;font-size:12.5px;color:var(--tx);display:flex;align-items:center;gap:6px">
+        <span class="dot" id="sm-status-dot" style="background:#3ddc97;margin:0"></span>
+        <span id="sm-status-title">Connection Status: Live</span>
+      </h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px">
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Realtime Channel</div>
+          <div id="sm-rt-status" style="font-weight:600;color:#3ddc97;margin-top:2px">ai-city-realtime</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">PostgreSQL Tables</div>
+          <div id="sm-db-status" style="font-weight:600;color:var(--tx);margin-top:2px">Checking tables...</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Synced Tasks</div>
+          <div id="sm-task-count" style="font-weight:600;color:var(--tx);margin-top:2px">0 tasks</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Synced Events</div>
+          <div id="sm-event-count" style="font-weight:600;color:var(--tx);margin-top:2px">0 events</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tm-sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h4 style="margin:0;font-size:12.5px;color:var(--tx)">Database Schema (Optional PostgreSQL Persistence)</h4>
+        <button class="g" id="sm-copy-sql" style="font-size:11px;padding:3px 9px">Copy SQL</button>
+      </div>
+      <p style="margin:0 0 8px;font-size:11.5px;color:var(--mut);line-height:1.4">
+        Realtime broadcast channel works live across clients. To also persist tasks and event logs in your Supabase Postgres tables, execute this SQL script in your Supabase SQL Editor:
+      </p>
+      <pre id="sm-sql-preview" style="background:#090d1a;border:1px solid var(--line);border-radius:6px;padding:10px;font-size:10.5px;color:#9fb4ff;overflow-x:auto;max-height:130px;margin:0;font-family:monospace;white-space:pre"></pre>
+    </div>
+  </div>
+  <div class="tm-foot" style="padding:10px 18px;border-top:1px solid var(--line);background:#111730;display:flex;justify-content:space-between;align-items:center">
+    <button class="g" id="sm-refresh-sync" style="font-size:12px;padding:5px 12px">🔄 Re-check database tables</button>
+    <button id="sm-done" style="font-size:12px;padding:5px 14px">Close</button>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
+<script type="module">
+import { initSupabase, broadcastEvent, broadcastTask, syncState, SCHEMA_SQL, checkAndSyncTables } from './src/supabase.ts';
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -172,10 +227,61 @@ const LS="aicity.v2";let store={events:[],tasks:{}};
 try{const s=JSON.parse(localStorage.getItem(LS));if(s)store=s}catch(e){}
 for(const t of Object.values(store.tasks))if(["queued","running","waiting"].includes(t.status))t.status="interrupted";
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify({events:store.events.slice(-200),tasks:store.tasks}))}catch(e){}};
-function ingest(e){e.id=e.id||uid();e.ts=e.ts||Date.now();store.events.push(e);save();apply(e);renderFeed();dirty=true}
+function ingest(e, isRemote=false){
+  e.id=e.id||uid();
+  e.ts=e.ts||Date.now();
+  store.events.push(e);
+  save();
+  apply(e, isRemote);
+  renderFeed();
+  dirty=true;
+  if(!isRemote){
+    broadcastEvent(e);
+  }
+}
 const publish=(type,o)=>ingest({type,...o});
-let ws=null;function connect(url){ws=new WebSocket(url);ws.onmessage=m=>{try{ingest(JSON.parse(m.data))}catch(e){}}}
-window.AICity={ingest,connect};
+let ws=null,wsTimer=null,wsRetries=0;
+function connect(url){
+  if(!url){
+    const proto=location.protocol==="https:"?"wss:":"ws:";
+    url=`${proto}//${location.host}/ws`;
+  }
+  if(ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  try{
+    ws=new WebSocket(url);
+    ws.onopen=()=>{
+      wsRetries=0;
+      console.log("[AICity WS] Connected to backend at", url);
+    };
+    ws.onmessage=m=>{
+      try{
+        const data=JSON.parse(m.data);
+        if(data&&(data.type==="connection"||data.type==="pong")) return;
+        const ev=data.event||data;
+        if(ev&&ev.type){
+          if(store.events.some(x=>x.id===ev.id)) return;
+          ingest(ev,true);
+        }
+      }catch(err){
+        console.warn("[AICity WS] Failed parsing message", err);
+      }
+    };
+    ws.onclose=()=>{
+      ws=null;
+      const delay=Math.min(1000 * Math.pow(1.5, wsRetries++), 12000);
+      clearTimeout(wsTimer);
+      wsTimer=setTimeout(()=>connect(url), delay);
+    };
+    ws.onerror=()=>{
+      try{ws.close();}catch(_){}
+    };
+  }catch(e){
+    const delay=Math.min(1000 * Math.pow(1.5, wsRetries++), 12000);
+    clearTimeout(wsTimer);
+    wsTimer=setTimeout(()=>connect(url), delay);
+  }
+}
+window.AICity={ingest,connect,store};
 
 /* ---------- scene ---------- */
 const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,innerWidth<820?1.5:2));$("#stage").appendChild(R.domElement);R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -341,24 +447,24 @@ function synthesizeReport(did,text){
  return reports[did]||`Task report for "${q}" completed by ${dName}. All 6 assigned district agents verified findings.`;
 }
 
-function apply(e){
+function apply(e, isRemote=false){
  const B=byId[e.agent],T=store.tasks[e.task],To=byId[e.to];
  switch(e.type){
- case"task.created":store.tasks[e.task]={id:e.task,dept:e.department,text:e.text,status:"queued",progress:0,created:e.ts,agents:[]};break;
+ case"task.created":store.tasks[e.task]={id:e.task,dept:e.department,text:e.text,status:"queued",progress:0,created:e.ts,agents:[]};if(!isRemote)broadcastTask(store.tasks[e.task]);break;
  case"task.assigned":if(!B)break;B.task=e.task;B.base="collaborating";T&&!T.agents.includes(B.id)&&T.agents.push(B.id);go(B,B.slot,"collaborating",B.D.c);break;
- case"agent.started":if(!B||!T)break;if(T.status==="queued")T.status="running";B.task=e.task;B.done=false;B.base=e.state||"working";
+ case"agent.started":if(!B||!T)break;if(T.status==="queued"){T.status="running";if(!isRemote)broadcastTask(T);}B.task=e.task;B.done=false;B.base=e.state||"working";
   if(B.idx===0)go(B,B.slot,B.base,B.D.c);else go(B,B.desk,B.base,B.scr);break;
- case"agent.progress":if(T&&!["failed","done"].includes(T.status)){T.status="running";if(e.progress!=null)T.progress=e.progress}if(B&&e.state)setBase(B,e.state);if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.progress":if(T&&!["failed","done"].includes(T.status)){T.status="running";if(e.progress!=null)T.progress=e.progress;if(!isRemote)broadcastTask(T)}if(B&&e.state)setBase(B,e.state);if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.message_sent":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:e.text});To.msgs.push({t:e.ts,from:B.name,text:e.text});To.face=B.pos;transient(B,"collaborating",1800,To.pos)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.handoff":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:"Handoff: "+e.text});To.msgs.push({t:e.ts,from:B.name,text:"Handoff: "+e.text});B.base="idle";transient(B,"transferring_data",1500,To.pos);packet(B,To)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
- case"agent.waiting_for_input":if(B){setBase(B,"waiting");T&&(T.status="waiting")}break;
- case"agent.review_started":if(!B)break;{if(T)T.status="running";const tg=byId[e.target];B.base="reviewing";if(tg)go(B,{x:tg.scr.x*.82+tg.D.c.x*.18,z:tg.scr.z*.82+tg.D.c.z*.18},"reviewing",tg.pos);else go(B,B.slot,"reviewing",B.D.c)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.waiting_for_input":if(B){setBase(B,"waiting");T&&(T.status="waiting");if(T&&!isRemote)broadcastTask(T)}break;
+ case"agent.review_started":if(!B)break;{if(T){T.status="running";if(!isRemote)broadcastTask(T)}const tg=byId[e.target];B.base="reviewing";if(tg)go(B,{x:tg.scr.x*.82+tg.D.c.x*.18,z:tg.scr.z*.82+tg.D.c.z*.18},"reviewing",tg.pos);else go(B,B.slot,"reviewing",B.D.c)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.completed":if(B){B.done=true;B.base="idle";if(B.ambient===false)home(B)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.recovered":if(B){B.task=null;home(B)}break;
- case"task.completed":if(!T)break;T.status="done";T.progress=1;T.deliverable=e.deliverable||e.text;
+ case"task.completed":if(!T)break;T.status="done";T.progress=1;T.deliverable=e.deliverable||e.text;if(!isRemote)broadcastTask(T);
   if(activeTaskId===e.task)updateTaskModal(e.task);
   bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;b.done=false;b.dest.copy(b.pos);setS(b,"celebrating");b.until=now()+2400+Math.random()*600;b.after=()=>home(b)});break;
- case"task.failed":if(!T)break;T.status="failed";T.err=e.text;T.failedAgent=e.agent;
+ case"task.failed":if(!T)break;T.status="failed";T.err=e.text;T.failedAgent=e.agent;if(!isRemote)broadcastTask(T);
   if(activeTaskId===e.task)updateTaskModal(e.task);
   bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;if(b===B){b.dest.copy(b.pos);b.until=0;b.after=null;b.base="error";setS(b,"error")}else home(b)});if(B&&!B.task&&B.state!=="error"){B.base="error";setS(B,"error")}break}
 }
@@ -467,10 +573,34 @@ $("#rv").onclick=()=>{clearSel();Object.assign(ct,{tx:0,tz:0,r:64,ph:.95})};
 /* ---------- UI ---------- */
 const lb=$("#labels");DEFS.forEach(d=>{const b=document.createElement("button");b.className="dl";b.dataset.d=d[0];b.onclick=()=>selDept(d[0]);lb.appendChild(b)});
 $("#fd").innerHTML=DEFS.map(d=>`<option value="${d[0]}">${d[1]}</option>`).join("");
-$("#fs").onclick=()=>{
+$("#fs").onclick=async ()=>{
  const did=$("#fd").value,txt=$("#ft").value.trim()||$("#ft").placeholder,fail=$("#ff").checked;
  $("#ft").value="";
- run(did,txt,fail);
+ const btn=$("#fs");
+ btn.disabled=true;
+ const prevTxt=btn.textContent;
+ btn.textContent="Dispatching...";
+ try{
+  const res=await fetch("/api/tasks",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({district:did,text:txt,fail})
+  });
+  if(!res.ok){
+   const errData=await res.json().catch(()=>({}));
+   throw new Error(errData.error || ("HTTP "+res.status));
+  }
+  const data=await res.json();
+  if(data&&data.event&&!store.events.some(e=>e.id===data.event.id)){
+   ingest(data.event,true);
+  }
+ }catch(err){
+  console.warn("[AICity] Backend task dispatch error, running offline fallback simulation:", err);
+  run(did,txt,fail);
+ }finally{
+  btn.disabled=false;
+  btn.textContent=prevTxt;
+ }
 };
 const tm=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
 function describe(e){const a=byId[e.agent],t=byId[e.to],n=a?a.name:"";switch(e.type){
@@ -618,6 +748,112 @@ function showSide(on){side.classList.toggle("hide",!on);document.body.classList.
 sb.onclick=()=>showSide(side.classList.contains("hide"));
 $("#zi").onclick=()=>ct.r=Math.max(10,ct.r*.8);$("#zo").onclick=()=>ct.r=Math.min(140,ct.r*1.25);
 if(innerWidth<=820){showSide(false);wm.classList.add("c");$("#wt").setAttribute("aria-expanded",false)}
+
+/* ---------- Supabase integration & modal handlers ---------- */
+function handleRemoteEvent(e){
+  if(!e||!e.id)return;
+  if(store.events.some(x=>x.id===e.id))return;
+  ingest(e,true);
+}
+function handleRemoteTask(remoteTask){
+  if(!remoteTask||!remoteTask.id)return;
+  const existing=store.tasks[remoteTask.id];
+  if(existing){
+    existing.status=remoteTask.status||existing.status;
+    if(remoteTask.progress!=null)existing.progress=remoteTask.progress;
+    if(remoteTask.deliverable)existing.deliverable=remoteTask.deliverable;
+    if(remoteTask.err)existing.err=remoteTask.err;
+  }else{
+    store.tasks[remoteTask.id]={
+      id:remoteTask.id,
+      dept:remoteTask.dept,
+      text:remoteTask.text,
+      status:remoteTask.status||"queued",
+      progress:remoteTask.progress||0,
+      deliverable:remoteTask.deliverable,
+      err:remoteTask.err,
+      created:remoteTask.created||Date.now(),
+      agents:[]
+    };
+  }
+  if(activeTaskId===remoteTask.id)updateTaskModal(remoteTask.id);
+  save();
+  dirty=true;
+  updateSupabaseUI(syncState);
+}
+function updateSupabaseUI(st){
+  const dot=$("#sb-dot"),txt=$("#sb-text"),sDot=$("#sm-status-dot"),sTitle=$("#sm-status-title"),rtStatus=$("#sm-rt-status"),dbStatus=$("#sm-db-status"),taskCount=$("#sm-task-count"),eventCount=$("#sm-event-count");
+  if(st.connected){
+    if(dot)dot.style.background="#3ddc97";
+    if(txt)txt.textContent="Supabase Live";
+    if(sDot)sDot.style.background="#3ddc97";
+    if(sTitle)sTitle.textContent="Supabase Connected & Synced";
+  }else{
+    if(dot)dot.style.background="#ff9f6b";
+    if(txt)txt.textContent="Supabase "+(st.realtimeStatus||"Offline");
+    if(sDot)sDot.style.background="#ff9f6b";
+    if(sTitle)sTitle.textContent="Supabase: "+(st.realtimeStatus||"Connecting");
+  }
+  if(rtStatus){
+    rtStatus.textContent="ai-city-realtime ("+st.realtimeStatus+")";
+    rtStatus.style.color=st.realtimeStatus==="SUBSCRIBED"?"#3ddc97":"#ff9f6b";
+  }
+  if(dbStatus){
+    if(st.tableTasksReady&&st.tableEventsReady){
+      dbStatus.textContent="Tables active (tasks & events)";
+      dbStatus.style.color="#3ddc97";
+    }else if(st.tableTasksReady||st.tableEventsReady){
+      dbStatus.textContent="Partial table sync";
+      dbStatus.style.color="#ffd23f";
+    }else{
+      dbStatus.textContent="Realtime active (Postgres tables optional)";
+      dbStatus.style.color="var(--mut)";
+    }
+  }
+  if(taskCount){
+    taskCount.textContent=Object.keys(store.tasks).length+" tasks ("+st.syncedTaskCount+" in DB)";
+  }
+  if(eventCount){
+    eventCount.textContent=store.events.length+" events ("+st.syncedEventCount+" in DB)";
+  }
+}
+function openSupabaseModal(){
+  $("#sm").style.display="flex";
+  $("#sm-backdrop").style.display="block";
+  $("#sm-sql-preview").textContent=SCHEMA_SQL.trim();
+  updateSupabaseUI(syncState);
+}
+function closeSupabaseModal(){
+  $("#sm").style.display="none";
+  $("#sm-backdrop").style.display="none";
+}
+$("#sb-cloud").onclick=openSupabaseModal;
+$("#sm-close").onclick=closeSupabaseModal;
+$("#sm-done").onclick=closeSupabaseModal;
+$("#sm-backdrop").onclick=closeSupabaseModal;
+$("#sm-copy-sql").onclick=()=>{
+  navigator.clipboard.writeText(SCHEMA_SQL.trim());
+  $("#sm-copy-sql").textContent="Copied!";
+  setTimeout(()=>{$("#sm-copy-sql").textContent="Copy SQL"},2000);
+};
+$("#sm-refresh-sync").onclick=()=>{
+  $("#sm-refresh-sync").textContent="Checking...";
+  checkAndSyncTables(handleRemoteTask,(st)=>{
+    updateSupabaseUI(st);
+    $("#sm-refresh-sync").textContent="🔄 Re-check database tables";
+  });
+};
+try{
+  initSupabase(handleRemoteEvent,handleRemoteTask,updateSupabaseUI);
+}catch(err){
+  console.warn("Supabase init notice:",err);
+}
+try{
+  connect();
+}catch(err){
+  console.warn("WebSocket connect notice:",err);
+}
+
 renderFeed();frame();setInterval(()=>{if(sel&&sel.bot)dirty=true},1500);
 </script>
 </body>

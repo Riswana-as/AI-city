@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
 <title>AI City</title>
 <meta name="description" content="A living 3D AI-workforce city featuring autonomous agents, specialized districts, real-time collaboration events, and dynamic time-of-day simulation." />
 <meta property="og:title" content="AI City" />
@@ -12,10 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#050816;--panel:rgba(11,16,38,.86);--line:rgba(120,150,255,.24);--tx:#e8edff;--mut:#93a0c8;--acc:#5b8cff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050816}}
-@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--panel:rgba(246,248,255,.92);--line:rgba(40,60,140,.25);--tx:#101734;--mut:#4d5a85;color-scheme:light}}
-:root[data-theme="dark"]{--panel:rgba(11,16,38,.86);--tx:#e8edff}
-*{box-sizing:border-box}html,body{height:100%;margin:0}
+*{box-sizing:border-box}html,body{height:100%;margin:0;color-scheme:dark}
 body{background:var(--bg);color:var(--tx);font:13px/1.45 Sora,system-ui,sans-serif;overflow:hidden}
 #stage{position:fixed;inset:0}#stage canvas{display:block;width:100%;height:100%;touch-action:none}
 .p{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(8px)}
@@ -28,32 +26,27 @@ button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px sol
 #side{right:12px;top:calc(12px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:340px;display:flex;flex-direction:column;overflow:hidden}
 #side>section{padding:12px 14px;border-bottom:1px solid var(--line)}#side>section:last-child{border:0;flex:1;overflow:auto;min-height:90px}
 h2{font-size:12px;margin:0 0 8px;color:var(--mut);font-weight:600}
-select,textarea{width:100%;background:rgba(20,28,60,.9);color:var(--tx);border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin-bottom:6px;color-scheme:dark}
+select,textarea{width:100%;background:#0e1530 !important;background-color:#0e1530 !important;color:#ffffff !important;border:1px solid var(--line);border-radius:7px;padding:8px 10px;margin-bottom:6px;color-scheme:dark !important;font-size:13px}
 select{cursor:pointer}
-select option{background-color:#0d1228;color:#e8edff;padding:8px 6px}
-@media (prefers-color-scheme:light){
-  :root:not([data-theme="dark"]) select,
-  :root:not([data-theme="dark"]) textarea{
-    background:#ffffff;
-    color:#101734;
-    color-scheme:light;
-  }
-  :root:not([data-theme="dark"]) select option{
-    background-color:#ffffff;
-    color:#101734;
-  }
-}
-:root[data-theme="dark"] select,
-:root[data-theme="dark"] textarea{
-  background:rgba(20,28,60,.9);
-  color:#e8edff;
-  color-scheme:dark;
-}
-:root[data-theme="dark"] select option{
-  background-color:#0d1228;
-  color:#e8edff;
-}
+select option,select optgroup{background:#0b1026 !important;background-color:#0b1026 !important;color:#ffffff !important;color-scheme:dark !important;padding:10px 8px;font-size:13px}
+select option:checked{background-color:#1e2c60 !important;color:#ffd23f !important}
+select option:hover{background-color:#1a2754 !important;color:#ffffff !important}
 textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;align-items:center;margin-bottom:8px}
+
+#cm-backdrop{position:fixed;inset:0;background:rgba(5,8,22,.65);backdrop-filter:blur(4px);z-index:30;display:none}
+#cm{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;max-width:calc(100% - 24px);height:580px;max-height:88vh;background:var(--panel);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(16px);box-shadow:0 18px 45px rgba(0,0,0,.65);z-index:31;display:none;flex-direction:column;overflow:hidden}
+.cm-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;background:rgba(18,25,55,.6)}
+.cm-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.cm-msg{max-width:85%;padding:9px 12px;border-radius:10px;font-size:12.5px;line-height:1.55;word-break:break-word}
+.cm-msg.user{align-self:flex-end;background:var(--acc);color:#fff;border-bottom-right-radius:2px}
+.cm-msg.agent{align-self:flex-start;background:rgba(120,150,255,.1);border:1px solid var(--line);color:var(--tx);border-bottom-left-radius:2px;white-space:pre-wrap}
+.cm-msg.agent small{display:block;color:var(--mut);font-size:10.5px;margin-bottom:4px}
+.cm-chips{display:flex;gap:6px;flex-wrap:wrap;padding:6px 14px 2px}
+.cm-chip{font-size:11px;background:rgba(120,150,255,.08);border:1px solid var(--line);border-radius:12px;padding:3px 9px;cursor:pointer;color:var(--mut);transition:all .15s}
+.cm-chip:hover{border-color:var(--acc);color:var(--tx)}
+.cm-input-bar{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;background:rgba(12,17,40,.8)}
+.cm-input-bar input{flex:1;background:#0d132e;border:1px solid var(--line);border-radius:7px;color:#fff;padding:8px 11px;font:inherit;font-size:12.5px}
+.cm-input-bar input:focus{outline:2px solid var(--acc)}
 .note{color:var(--mut);font-size:11px;margin-top:6px}
 #tasks{max-height:30vh;overflow:auto}
 .t{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer;transition:all .15s}
@@ -92,7 +85,7 @@ textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;ali
 </head>
 <body>
 <div id="stage"></div><div id="labels"></div>
-<div id="lc"><div class="p" id="hud"><div><b>AI City</b><small>Simulated orchestrator</small></div><div><b id="hb">42</b><small>bots</small></div><div><b id="ha">0</b><small>on tasks</small></div><div><b id="ht">0</b><small>running</small></div><button class="g" id="zi" aria-label="Zoom in">+</button><button class="g" id="zo" aria-label="Zoom out">−</button><button class="g" id="rv">Overview</button></div>
+<div id="lc"><div class="p" id="hud"><div><b>AI City</b><small>Simulated orchestrator</small></div><div><b id="hb">42</b><small>bots</small></div><div><b id="ha">0</b><small>on tasks</small></div><div><b id="ht">0</b><small>running</small></div><button class="g" id="zi" aria-label="Zoom in">+</button><button class="g" id="zo" aria-label="Zoom out">−</button><button class="g" id="rv">Overview</button><button class="g" id="sb-cloud" aria-label="Supabase Status" style="display:flex;align-items:center;gap:6px"><span class="dot" id="sb-dot" style="background:#ff9f6b;margin:0"></span><span id="sb-text">Supabase</span></button></div>
 <div class="p" id="wm" role="group" aria-label="World mode"></div></div>
 <button class="p" id="sb" aria-expanded="true" aria-label="Show or hide the tasks panel">Hide panel</button>
 <div class="p" id="info"></div>
@@ -149,8 +142,89 @@ textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;ali
     <button class="g" id="tm-filter-feed">Filter activity feed</button>
   </div>
 </div>
+<div id="cm-backdrop"></div>
+<div id="cm" class="p" role="dialog" aria-modal="true" aria-label="Direct Chat with Agent">
+  <div class="cm-head">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="cm-avatar" style="width:32px;height:32px;border-radius:8px;background:rgba(91,140,255,.2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--acc)">🤖</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <b id="cm-name" style="font-size:14px">Agent Name</b>
+          <span class="chip" id="cm-trait" style="font-size:10px">trait</span>
+        </div>
+        <div id="cm-role" style="color:var(--mut);font-size:11px">Role · District</div>
+      </div>
+    </div>
+    <button class="g" id="cm-close" aria-label="Close chat" style="padding:4px 9px">✕</button>
+  </div>
+  <div class="cm-chips" id="cm-chips">
+    <span class="cm-chip" data-q="What is your current analysis on our data?">📊 What is your current data analysis?</span>
+    <span class="cm-chip" data-q="What are the key risks and bottlenecks?">⚠️ What are key risks?</span>
+    <span class="cm-chip" data-q="How can we optimize unit economics?">💡 How to optimize outcomes?</span>
+  </div>
+  <div class="cm-body" id="cm-body"></div>
+  <form class="cm-input-bar" id="cm-form">
+    <input type="text" id="cm-input" placeholder="Ask this agent anything (powered by Gemini)..." autocomplete="off" />
+    <button type="submit" id="cm-send">Send</button>
+  </form>
+</div>
+<div id="sm-backdrop" style="display:none;position:fixed;inset:0;background:rgba(5,9,20,.65);backdrop-filter:blur(4px);z-index:90"></div>
+<div id="sm" class="p" role="dialog" aria-modal="true" aria-label="Supabase Cloud Synchronization" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(620px,calc(100vw - 32px));max-height:85vh;background:#0d1224;border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:95;flex-direction:column;overflow:hidden">
+  <div class="tm-head" style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line);background:#111730">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:28px;height:28px;border-radius:8px;background:rgba(61,220,151,.15);border:1px solid rgba(61,220,151,.4);display:flex;align-items:center;justify-content:center;color:#3ddc97;font-weight:bold;font-size:14px">⚡</div>
+      <div>
+        <h3 style="margin:0;font-size:15px;color:var(--tx)">Supabase Cloud Integration</h3>
+        <small style="color:var(--mut);font-size:11px">Project: <code id="sm-project-url" style="color:#3ddc97">Not configured (Local & WS Mode)</code></small>
+      </div>
+    </div>
+    <button class="g" id="sm-close" aria-label="Close" style="padding:4px 9px">✕</button>
+  </div>
+  <div class="tm-body" style="padding:16px 18px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px">
+    <div class="tm-sec" style="background:#131a38;border:1px solid var(--line);border-radius:8px;padding:12px">
+      <h4 style="margin:0 0 8px;font-size:12.5px;color:var(--tx);display:flex;align-items:center;gap:6px">
+        <span class="dot" id="sm-status-dot" style="background:#3ddc97;margin:0"></span>
+        <span id="sm-status-title">Connection Status: Live</span>
+      </h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11.5px">
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Realtime Channel</div>
+          <div id="sm-rt-status" style="font-weight:600;color:#3ddc97;margin-top:2px">ai-city-realtime</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">PostgreSQL Tables</div>
+          <div id="sm-db-status" style="font-weight:600;color:var(--tx);margin-top:2px">Checking tables...</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Synced Tasks</div>
+          <div id="sm-task-count" style="font-weight:600;color:var(--tx);margin-top:2px">0 tasks</div>
+        </div>
+        <div style="background:#0d1224;padding:8px 10px;border-radius:6px;border:1px solid var(--line)">
+          <div style="color:var(--mut)">Synced Events</div>
+          <div id="sm-event-count" style="font-weight:600;color:var(--tx);margin-top:2px">0 events</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tm-sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h4 style="margin:0;font-size:12.5px;color:var(--tx)">Database Schema (Optional PostgreSQL Persistence)</h4>
+        <button class="g" id="sm-copy-sql" style="font-size:11px;padding:3px 9px">Copy SQL</button>
+      </div>
+      <p style="margin:0 0 8px;font-size:11.5px;color:var(--mut);line-height:1.4">
+        Realtime broadcast channel works live across clients. To also persist tasks and event logs in your Supabase Postgres tables, execute this SQL script in your Supabase SQL Editor:
+      </p>
+      <pre id="sm-sql-preview" style="background:#090d1a;border:1px solid var(--line);border-radius:6px;padding:10px;font-size:10.5px;color:#9fb4ff;overflow-x:auto;max-height:130px;margin:0;font-family:monospace;white-space:pre"></pre>
+    </div>
+  </div>
+  <div class="tm-foot" style="padding:10px 18px;border-top:1px solid var(--line);background:#111730;display:flex;justify-content:space-between;align-items:center">
+    <button class="g" id="sm-refresh-sync" style="font-size:12px;padding:5px 12px">🔄 Re-check database tables</button>
+    <button id="sm-done" style="font-size:12px;padding:5px 14px">Close</button>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
+<script type="module">
+import { initSupabase, broadcastEvent, broadcastTask, syncState, SCHEMA_SQL, checkAndSyncTables, SUPABASE_URL, isSupabaseConfigured } from './src/supabase.ts';
 const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -172,10 +246,61 @@ const LS="aicity.v2";let store={events:[],tasks:{}};
 try{const s=JSON.parse(localStorage.getItem(LS));if(s)store=s}catch(e){}
 for(const t of Object.values(store.tasks))if(["queued","running","waiting"].includes(t.status))t.status="interrupted";
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify({events:store.events.slice(-200),tasks:store.tasks}))}catch(e){}};
-function ingest(e){e.id=e.id||uid();e.ts=e.ts||Date.now();store.events.push(e);save();apply(e);renderFeed();dirty=true}
+function ingest(e, isRemote=false){
+  e.id=e.id||uid();
+  e.ts=e.ts||Date.now();
+  store.events.push(e);
+  save();
+  apply(e, isRemote);
+  renderFeed();
+  dirty=true;
+  if(!isRemote){
+    broadcastEvent(e);
+  }
+}
 const publish=(type,o)=>ingest({type,...o});
-let ws=null;function connect(url){ws=new WebSocket(url);ws.onmessage=m=>{try{ingest(JSON.parse(m.data))}catch(e){}}}
-window.AICity={ingest,connect};
+let ws=null,wsTimer=null,wsRetries=0;
+function connect(url){
+  if(!url){
+    const proto=location.protocol==="https:"?"wss:":"ws:";
+    url=`${proto}//${location.host}/ws`;
+  }
+  if(ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  try{
+    ws=new WebSocket(url);
+    ws.onopen=()=>{
+      wsRetries=0;
+      console.log("[AICity WS] Connected to backend at", url);
+    };
+    ws.onmessage=m=>{
+      try{
+        const data=JSON.parse(m.data);
+        if(data&&(data.type==="connection"||data.type==="pong")) return;
+        const ev=data.event||data;
+        if(ev&&ev.type){
+          if(store.events.some(x=>x.id===ev.id)) return;
+          ingest(ev,true);
+        }
+      }catch(err){
+        console.warn("[AICity WS] Failed parsing message", err);
+      }
+    };
+    ws.onclose=()=>{
+      ws=null;
+      const delay=Math.min(1000 * Math.pow(1.5, wsRetries++), 12000);
+      clearTimeout(wsTimer);
+      wsTimer=setTimeout(()=>connect(url), delay);
+    };
+    ws.onerror=()=>{
+      try{ws.close();}catch(_){}
+    };
+  }catch(e){
+    const delay=Math.min(1000 * Math.pow(1.5, wsRetries++), 12000);
+    clearTimeout(wsTimer);
+    wsTimer=setTimeout(()=>connect(url), delay);
+  }
+}
+window.AICity={ingest,connect,store};
 
 /* ---------- scene ---------- */
 const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,innerWidth<820?1.5:2));$("#stage").appendChild(R.domElement);R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -341,24 +466,24 @@ function synthesizeReport(did,text){
  return reports[did]||`Task report for "${q}" completed by ${dName}. All 6 assigned district agents verified findings.`;
 }
 
-function apply(e){
+function apply(e, isRemote=false){
  const B=byId[e.agent],T=store.tasks[e.task],To=byId[e.to];
  switch(e.type){
- case"task.created":store.tasks[e.task]={id:e.task,dept:e.department,text:e.text,status:"queued",progress:0,created:e.ts,agents:[]};break;
+ case"task.created":store.tasks[e.task]={id:e.task,dept:e.department,text:e.text,status:"queued",progress:0,created:e.ts,agents:[]};if(!isRemote)broadcastTask(store.tasks[e.task]);break;
  case"task.assigned":if(!B)break;B.task=e.task;B.base="collaborating";T&&!T.agents.includes(B.id)&&T.agents.push(B.id);go(B,B.slot,"collaborating",B.D.c);break;
- case"agent.started":if(!B||!T)break;if(T.status==="queued")T.status="running";B.task=e.task;B.done=false;B.base=e.state||"working";
+ case"agent.started":if(!B||!T)break;if(T.status==="queued"){T.status="running";if(!isRemote)broadcastTask(T);}B.task=e.task;B.done=false;B.base=e.state||"working";
   if(B.idx===0)go(B,B.slot,B.base,B.D.c);else go(B,B.desk,B.base,B.scr);break;
- case"agent.progress":if(T&&!["failed","done"].includes(T.status)){T.status="running";if(e.progress!=null)T.progress=e.progress}if(B&&e.state)setBase(B,e.state);if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.progress":if(T&&!["failed","done"].includes(T.status)){T.status="running";if(e.progress!=null)T.progress=e.progress;if(!isRemote)broadcastTask(T)}if(B&&e.state)setBase(B,e.state);if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.message_sent":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:e.text});To.msgs.push({t:e.ts,from:B.name,text:e.text});To.face=B.pos;transient(B,"collaborating",1800,To.pos)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.handoff":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:"Handoff: "+e.text});To.msgs.push({t:e.ts,from:B.name,text:"Handoff: "+e.text});B.base="idle";transient(B,"transferring_data",1500,To.pos);packet(B,To)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
- case"agent.waiting_for_input":if(B){setBase(B,"waiting");T&&(T.status="waiting")}break;
- case"agent.review_started":if(!B)break;{if(T)T.status="running";const tg=byId[e.target];B.base="reviewing";if(tg)go(B,{x:tg.scr.x*.82+tg.D.c.x*.18,z:tg.scr.z*.82+tg.D.c.z*.18},"reviewing",tg.pos);else go(B,B.slot,"reviewing",B.D.c)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.waiting_for_input":if(B){setBase(B,"waiting");T&&(T.status="waiting");if(T&&!isRemote)broadcastTask(T)}break;
+ case"agent.review_started":if(!B)break;{if(T){T.status="running";if(!isRemote)broadcastTask(T)}const tg=byId[e.target];B.base="reviewing";if(tg)go(B,{x:tg.scr.x*.82+tg.D.c.x*.18,z:tg.scr.z*.82+tg.D.c.z*.18},"reviewing",tg.pos);else go(B,B.slot,"reviewing",B.D.c)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.completed":if(B){B.done=true;B.base="idle";if(B.ambient===false)home(B)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
  case"agent.recovered":if(B){B.task=null;home(B)}break;
- case"task.completed":if(!T)break;T.status="done";T.progress=1;T.deliverable=e.deliverable||e.text;
+ case"task.completed":if(!T)break;T.status="done";T.progress=1;T.deliverable=e.deliverable||e.text;if(!isRemote)broadcastTask(T);
   if(activeTaskId===e.task)updateTaskModal(e.task);
   bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;b.done=false;b.dest.copy(b.pos);setS(b,"celebrating");b.until=now()+2400+Math.random()*600;b.after=()=>home(b)});break;
- case"task.failed":if(!T)break;T.status="failed";T.err=e.text;T.failedAgent=e.agent;
+ case"task.failed":if(!T)break;T.status="failed";T.err=e.text;T.failedAgent=e.agent;if(!isRemote)broadcastTask(T);
   if(activeTaskId===e.task)updateTaskModal(e.task);
   bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;if(b===B){b.dest.copy(b.pos);b.until=0;b.after=null;b.base="error";setS(b,"error")}else home(b)});if(B&&!B.task&&B.state!=="error"){B.base="error";setS(B,"error")}break}
 }
@@ -412,15 +537,29 @@ function updateTaskModal(tid){
  const bList=D?D.bots:[];
  $("#tm-agents").innerHTML=bList.map(b=>`
   <div class="tm-agent-card" data-b="${b.id}">
-   <div style="display:flex;align-items:center;gap:6px">
-    <span class="dot" style="background:${SC[b.state]}"></span>
-    <b>${esc(b.name)}</b>
+   <div style="display:flex;align-items:center;justify-content:space-between">
+     <div style="display:flex;align-items:center;gap:6px">
+       <span class="dot" style="background:${SC[b.state]}"></span>
+       <b>${esc(b.name)}</b>
+     </div>
+     <button class="g" style="padding:1px 6px;font-size:10px" data-cb="${b.id}" title="Chat with ${esc(b.name)}">💬 Chat</button>
    </div>
    <div style="color:var(--mut);font-size:10.5px;margin-top:2px">${esc(b.role)}</div>
    <div style="font-size:10px;margin-top:2px;color:${SC[b.state]}">${b.state.replace("_"," ")}</div>
   </div>`).join("");
  $("#tm-agents").querySelectorAll("[data-b]").forEach(card=>{
-  card.onclick=()=>{closeTaskModal();selBot(byId[card.dataset.b])};
+  card.onclick=(e)=>{
+    if(e.target.closest("[data-cb]")) return;
+    closeTaskModal();
+    selBot(byId[card.dataset.b]);
+  };
+ });
+ $("#tm-agents").querySelectorAll("[data-cb]").forEach(btn=>{
+  btn.onclick=(e)=>{
+    e.stopPropagation();
+    closeTaskModal();
+    openChatModal(byId[btn.dataset.cb]);
+  };
  });
  const rep=T.deliverable||(T.status==="running"?"Collaborating agents are executing subtasks, peer reviews, and synthesizing data...":(T.err||"No deliverable generated."));
  $("#tm-deliverable").textContent=rep;
@@ -446,6 +585,83 @@ function closeTaskModal(){
 $("#tm-close").onclick=closeTaskModal;
 $("#tm-backdrop").onclick=closeTaskModal;
 
+/* ---------- direct agent chat modal (ChatGPT style) ---------- */
+let activeChatBot=null;
+const chatHistories={};
+function openChatModal(b){
+ if(!b)return;
+ activeChatBot=b;
+ $("#cm-name").textContent=b.name;
+ $("#cm-trait").textContent=b.trait;
+ $("#cm-role").textContent=`${b.role} · ${b.D.name}`;
+ const colHex=b.D.col?`#${b.D.col.toString(16).padStart(6,'0')}`:"#5b8cff";
+ $("#cm-avatar").style.color=colHex;
+ $("#cm-avatar").style.borderColor=colHex;
+ if(!chatHistories[b.id]){
+  chatHistories[b.id]=[
+   {role:"model",text:`Hello! I am ${b.name}, the ${b.role} in our ${b.D.name} (${b.trait} trait). Ask me anything about our data analysis, operations, or current tasks.`}
+  ];
+ }
+ renderChatHistory();
+ $("#cm").style.display="flex";
+ $("#cm-backdrop").style.display="block";
+ setTimeout(()=>$("#cm-input").focus(),50);
+}
+function closeChatModal(){
+ activeChatBot=null;
+ $("#cm").style.display="none";
+ $("#cm-backdrop").style.display="none";
+}
+$("#cm-close").onclick=closeChatModal;
+$("#cm-backdrop").onclick=closeChatModal;
+function renderChatHistory(){
+ if(!activeChatBot)return;
+ const h=chatHistories[activeChatBot.id]||[];
+ $("#cm-body").innerHTML=h.map(m=>`
+  <div class="cm-msg ${m.role==='user'?'user':'agent'}">
+   ${m.role==='model'?`<small>${esc(activeChatBot.name)} (${esc(activeChatBot.role)})</small>`:''}
+   ${esc(m.text)}
+  </div>`).join("");
+ $("#cm-body").scrollTop=$("#cm-body").scrollHeight;
+}
+async function sendChatMessage(txt){
+ if(!activeChatBot||!txt||!txt.trim())return;
+ const msg=txt.trim(),bot=activeChatBot;
+ chatHistories[bot.id].push({role:"user",text:msg});
+ chatHistories[bot.id].push({role:"model",text:"Thinking & analyzing with Gemini..."});
+ renderChatHistory();
+ $("#cm-input").value="";
+ try{
+  const res=await fetch("/api/chat",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    agentId:bot.id,
+    message:msg,
+    history:chatHistories[bot.id].slice(0,-2)
+   })
+  });
+  chatHistories[bot.id].pop();
+  if(!res.ok){
+   const errData=await res.json().catch(()=>({}));
+   throw new Error(errData.error||("HTTP "+res.status));
+  }
+  const data=await res.json();
+  chatHistories[bot.id].push({role:"model",text:data.reply||"Analysis complete."});
+ }catch(err){
+  chatHistories[bot.id].pop();
+  chatHistories[bot.id].push({role:"model",text:`As ${bot.name} (${bot.role}), I reviewed your inquiry: "${msg}". In ${bot.D.name}, we analyze telemetry and recommend targeted strategies.`});
+ }
+ renderChatHistory();
+}
+$("#cm-form").onsubmit=(e)=>{
+ e.preventDefault();
+ sendChatMessage($("#cm-input").value);
+};
+$("#cm-chips").querySelectorAll(".cm-chip").forEach(chip=>{
+ chip.onclick=()=>sendChatMessage(chip.dataset.q);
+});
+
 /* ---------- camera + picking ---------- */
 const cam={th:.7,ph:.95,r:64,tx:0,ty:0,tz:0},ct={...cam};let sel=null,filter=null,follow=null;
 let drag=null;const el=R.domElement,ray=new THREE.Raycaster(),mv=new THREE.Vector2();
@@ -467,10 +683,34 @@ $("#rv").onclick=()=>{clearSel();Object.assign(ct,{tx:0,tz:0,r:64,ph:.95})};
 /* ---------- UI ---------- */
 const lb=$("#labels");DEFS.forEach(d=>{const b=document.createElement("button");b.className="dl";b.dataset.d=d[0];b.onclick=()=>selDept(d[0]);lb.appendChild(b)});
 $("#fd").innerHTML=DEFS.map(d=>`<option value="${d[0]}">${d[1]}</option>`).join("");
-$("#fs").onclick=()=>{
+$("#fs").onclick=async ()=>{
  const did=$("#fd").value,txt=$("#ft").value.trim()||$("#ft").placeholder,fail=$("#ff").checked;
  $("#ft").value="";
- run(did,txt,fail);
+ const btn=$("#fs");
+ btn.disabled=true;
+ const prevTxt=btn.textContent;
+ btn.textContent="Dispatching...";
+ try{
+  const res=await fetch("/api/tasks",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({district:did,text:txt,fail})
+  });
+  if(!res.ok){
+   const errData=await res.json().catch(()=>({}));
+   throw new Error(errData.error || ("HTTP "+res.status));
+  }
+  const data=await res.json();
+  if(data&&data.event&&!store.events.some(e=>e.id===data.event.id)){
+   ingest(data.event,true);
+  }
+ }catch(err){
+  console.warn("[AICity] Backend task dispatch error, running offline fallback simulation:", err);
+  run(did,txt,fail);
+ }finally{
+  btn.disabled=false;
+  btn.textContent=prevTxt;
+ }
 };
 const tm=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
 function describe(e){const a=byId[e.agent],t=byId[e.to],n=a?a.name:"";switch(e.type){
@@ -521,9 +761,9 @@ function renderUI(){
   <div class="m" style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:6px">${T?`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Task: ${esc(T.text)}</span> <button class="g" style="padding:2px 7px;font-size:10.5px;white-space:nowrap" data-vt="${T.id}">View task info</button>`:"No assigned task"}</div>
   <h2 style="margin-top:10px">Recent messages</h2>${b.msgs.slice(-4).reverse().map(m=>`<div class="m">${m.from?"from "+m.from:"to "+m.to}: ${esc(m.text)}</div>`).join("")||'<div class="m">None yet</div>'}
   <div class="m" style="margin-top:6px">Completed runs: ${Object.values(store.tasks).filter(t=>t.status==="done"&&t.dept===b.D.id).length} in this district</div>
-  <div class="r"><button id="ba">Assign task</button><button class="g" disabled title="Needs a chat backend">Direct chat</button>${b.state==="error"?`<button id="br">Retry task</button>`:""}</div>`;
+  <div class="r"><button id="ba">Assign task</button><button class="g" id="bc">💬 Chat with ${esc(b.name)}</button>${b.state==="error"?`<button id="br">Retry task</button>`:""}</div>`;
   I.querySelectorAll("[data-vt]").forEach(btn=>btn.onclick=()=>openTaskModal(btn.dataset.vt));
-  $("#ba").onclick=()=>{$("#fd").value=b.D.id;showSide(true);$("#ft").focus()};const br=$("#br");if(br)br.onclick=()=>{const t=Object.values(store.tasks).find(t=>t.failedAgent===b.id&&t.status==="failed");t&&retry(t.id)}}
+  $("#ba").onclick=()=>{$("#fd").value=b.D.id;showSide(true);$("#ft").focus()};const bc=$("#bc");if(bc)bc.onclick=()=>openChatModal(b);const br=$("#br");if(br)br.onclick=()=>{const t=Object.values(store.tasks).find(t=>t.failedAgent===b.id&&t.status==="failed");t&&retry(t.id)}}
  else{const D=depts[sel.dept],busy=D.bots.filter(b=>b.task).length,tk=Object.values(store.tasks).filter(t=>t.dept===D.id&&["running","waiting","queued"].includes(t.status));
   I.innerHTML=`<h3>${D.name}</h3><div class="m">${D.goal}</div><div class="m">${busy} busy · ${6-busy} available</div><div class="r">${D.bots.map(b=>`<button class="g" data-b="${b.id}"><span class="dot" style="background:${SC[b.state]}"></span>${b.name}</button>`).join("")}</div>
   <h2 style="margin-top:10px">Collaborations</h2>${tk.map(t=>`<div class="m">${esc(t.text)}: ${t.agents.map(a=>byId[a].name).join(" → ")}</div>`).join("")||'<div class="m">None running</div>'}<div class="r"><button id="ba">Assign task here</button></div><div class="note">The activity feed is filtered to this district.</div>`;
@@ -618,6 +858,120 @@ function showSide(on){side.classList.toggle("hide",!on);document.body.classList.
 sb.onclick=()=>showSide(side.classList.contains("hide"));
 $("#zi").onclick=()=>ct.r=Math.max(10,ct.r*.8);$("#zo").onclick=()=>ct.r=Math.min(140,ct.r*1.25);
 if(innerWidth<=820){showSide(false);wm.classList.add("c");$("#wt").setAttribute("aria-expanded",false)}
+
+/* ---------- Supabase integration & modal handlers ---------- */
+function handleRemoteEvent(e){
+  if(!e||!e.id)return;
+  if(store.events.some(x=>x.id===e.id))return;
+  ingest(e,true);
+}
+function handleRemoteTask(remoteTask){
+  if(!remoteTask||!remoteTask.id)return;
+  const existing=store.tasks[remoteTask.id];
+  if(existing){
+    existing.status=remoteTask.status||existing.status;
+    if(remoteTask.progress!=null)existing.progress=remoteTask.progress;
+    if(remoteTask.deliverable)existing.deliverable=remoteTask.deliverable;
+    if(remoteTask.err)existing.err=remoteTask.err;
+  }else{
+    store.tasks[remoteTask.id]={
+      id:remoteTask.id,
+      dept:remoteTask.dept,
+      text:remoteTask.text,
+      status:remoteTask.status||"queued",
+      progress:remoteTask.progress||0,
+      deliverable:remoteTask.deliverable,
+      err:remoteTask.err,
+      created:remoteTask.created||Date.now(),
+      agents:[]
+    };
+  }
+  if(activeTaskId===remoteTask.id)updateTaskModal(remoteTask.id);
+  save();
+  dirty=true;
+  updateSupabaseUI(syncState);
+}
+function updateSupabaseUI(st){
+  const dot=$("#sb-dot"),txt=$("#sb-text"),sDot=$("#sm-status-dot"),sTitle=$("#sm-status-title"),rtStatus=$("#sm-rt-status"),dbStatus=$("#sm-db-status"),taskCount=$("#sm-task-count"),eventCount=$("#sm-event-count"),projUrl=$("#sm-project-url");
+  if(projUrl){
+    projUrl.textContent = isSupabaseConfigured ? (SUPABASE_URL || "Connected") : "Not configured (Local & WS Mode)";
+  }
+  if(st.connected){
+    if(dot)dot.style.background="#3ddc97";
+    if(txt)txt.textContent="Supabase Live";
+    if(sDot)sDot.style.background="#3ddc97";
+    if(sTitle)sTitle.textContent="Supabase Connected & Synced";
+  }else if(!isSupabaseConfigured){
+    if(dot)dot.style.background="#6b7aa3";
+    if(txt)txt.textContent="WS Live";
+    if(sDot)sDot.style.background="#6b7aa3";
+    if(sTitle)sTitle.textContent="Local & WebSocket Mode (Supabase Optional)";
+  }else{
+    if(dot)dot.style.background="#ff9f6b";
+    if(txt)txt.textContent="Supabase "+(st.realtimeStatus||"Offline");
+    if(sDot)sDot.style.background="#ff9f6b";
+    if(sTitle)sTitle.textContent="Supabase: "+(st.realtimeStatus||"Connecting");
+  }
+  if(rtStatus){
+    rtStatus.textContent=isSupabaseConfigured ? "ai-city-realtime ("+st.realtimeStatus+")" : "Disabled (Using Local WebSocket /ws)";
+    rtStatus.style.color=isSupabaseConfigured && st.realtimeStatus==="SUBSCRIBED" ? "#3ddc97" : "var(--mut)";
+  }
+  if(dbStatus){
+    if(st.tableTasksReady&&st.tableEventsReady){
+      dbStatus.textContent="Tables active (tasks & events)";
+      dbStatus.style.color="#3ddc97";
+    }else if(st.tableTasksReady||st.tableEventsReady){
+      dbStatus.textContent="Partial table sync";
+      dbStatus.style.color="#ffd23f";
+    }else{
+      dbStatus.textContent="Realtime active (Postgres tables optional)";
+      dbStatus.style.color="var(--mut)";
+    }
+  }
+  if(taskCount){
+    taskCount.textContent=Object.keys(store.tasks).length+" tasks ("+st.syncedTaskCount+" in DB)";
+  }
+  if(eventCount){
+    eventCount.textContent=store.events.length+" events ("+st.syncedEventCount+" in DB)";
+  }
+}
+function openSupabaseModal(){
+  $("#sm").style.display="flex";
+  $("#sm-backdrop").style.display="block";
+  $("#sm-sql-preview").textContent=SCHEMA_SQL.trim();
+  updateSupabaseUI(syncState);
+}
+function closeSupabaseModal(){
+  $("#sm").style.display="none";
+  $("#sm-backdrop").style.display="none";
+}
+$("#sb-cloud").onclick=openSupabaseModal;
+$("#sm-close").onclick=closeSupabaseModal;
+$("#sm-done").onclick=closeSupabaseModal;
+$("#sm-backdrop").onclick=closeSupabaseModal;
+$("#sm-copy-sql").onclick=()=>{
+  navigator.clipboard.writeText(SCHEMA_SQL.trim());
+  $("#sm-copy-sql").textContent="Copied!";
+  setTimeout(()=>{$("#sm-copy-sql").textContent="Copy SQL"},2000);
+};
+$("#sm-refresh-sync").onclick=()=>{
+  $("#sm-refresh-sync").textContent="Checking...";
+  checkAndSyncTables(handleRemoteTask,(st)=>{
+    updateSupabaseUI(st);
+    $("#sm-refresh-sync").textContent="🔄 Re-check database tables";
+  });
+};
+try{
+  initSupabase(handleRemoteEvent,handleRemoteTask,updateSupabaseUI);
+}catch(err){
+  console.warn("Supabase init notice:",err);
+}
+try{
+  connect();
+}catch(err){
+  console.warn("WebSocket connect notice:",err);
+}
+
 renderFeed();frame();setInterval(()=>{if(sel&&sel.bot)dirty=true},1500);
 </script>
 </body>
