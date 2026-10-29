@@ -1,0 +1,8 @@
+{
+  "name": "AI City",
+  "description": "A living 3D AI-workforce city featuring autonomous agents, specialized districts, real-time collaboration events, and dynamic time-of-day simulation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

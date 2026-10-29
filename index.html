@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI City</title>
+<meta name="description" content="A living 3D AI-workforce city featuring autonomous agents, specialized districts, real-time collaboration events, and dynamic time-of-day simulation." />
+<meta property="og:title" content="AI City" />
+<meta property="og:description" content="A living 3D AI-workforce city featuring autonomous agents, specialized districts, real-time collaboration events, and dynamic time-of-day simulation." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050816;--panel:rgba(11,16,38,.86);--line:rgba(120,150,255,.24);--tx:#e8edff;--mut:#93a0c8;--acc:#5b8cff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#050816}}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--panel:rgba(246,248,255,.92);--line:rgba(40,60,140,.25);--tx:#101734;--mut:#4d5a85;color-scheme:light}}
+:root[data-theme="dark"]{--panel:rgba(11,16,38,.86);--tx:#e8edff}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:13px/1.45 Sora,system-ui,sans-serif;overflow:hidden}
+#stage{position:fixed;inset:0}#stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.p{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(8px)}
+#hud{padding:10px 14px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+#hud b{font-size:16px;font-weight:600}#hud small{color:var(--mut);display:block}
+button,select,textarea{font:inherit;color:inherit}
+button{background:var(--acc);border:0;color:#fff;border-radius:7px;padding:6px 11px;cursor:pointer}
+button.g{background:transparent;border:1px solid var(--line);color:var(--tx)}button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #ffd23f;outline-offset:2px}
+#side{right:12px;top:calc(12px + env(safe-area-inset-top,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));width:340px;display:flex;flex-direction:column;overflow:hidden}
+#side>section{padding:12px 14px;border-bottom:1px solid var(--line)}#side>section:last-child{border:0;flex:1;overflow:auto;min-height:90px}
+h2{font-size:12px;margin:0 0 8px;color:var(--mut);font-weight:600}
+select,textarea{width:100%;background:rgba(20,28,60,.9);color:var(--tx);border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin-bottom:6px;color-scheme:dark}
+select{cursor:pointer}
+select option{background-color:#0d1228;color:#e8edff;padding:8px 6px}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]) select,
+  :root:not([data-theme="dark"]) textarea{
+    background:#ffffff;
+    color:#101734;
+    color-scheme:light;
+  }
+  :root:not([data-theme="dark"]) select option{
+    background-color:#ffffff;
+    color:#101734;
+  }
+}
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea{
+  background:rgba(20,28,60,.9);
+  color:#e8edff;
+  color-scheme:dark;
+}
+:root[data-theme="dark"] select option{
+  background-color:#0d1228;
+  color:#e8edff;
+}
+textarea{resize:none;height:52px}label{color:var(--mut);display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.note{color:var(--mut);font-size:11px;margin-top:6px}
+#tasks{max-height:30vh;overflow:auto}
+.t{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;cursor:pointer;transition:all .15s}
+.t:hover{background:rgba(120,150,255,.08);border-color:var(--acc)}
+.bar{height:4px;background:rgba(120,150,255,.2);border-radius:2px;margin:5px 0}.bar i{display:block;height:100%;background:var(--acc);border-radius:2px;transition:width .5s}
+.chip{display:inline-block;border-radius:9px;padding:0 7px;font-size:11px;border:1px solid var(--line)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.f{padding:4px 0;border-bottom:1px dashed var(--line);color:var(--tx)}.f time{color:var(--mut);margin-right:6px;font-size:11px}
+#info{left:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:330px;max-height:46vh;overflow:auto;padding:12px 14px;display:none}
+
+#tm-backdrop{position:fixed;inset:0;background:rgba(5,8,22,.65);backdrop-filter:blur(4px);z-index:20;display:none}
+#tm{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:580px;max-width:calc(100% - 24px);max-height:86vh;background:var(--panel);border:1px solid var(--line);border-radius:12px;backdrop-filter:blur(16px);box-shadow:0 18px 45px rgba(0,0,0,.6);z-index:21;display:none;flex-direction:column;overflow:hidden}
+.tm-head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.tm-head h3{margin:6px 0 0;font-size:16px;font-weight:600;color:var(--tx);line-height:1.35}
+.tm-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:14px}
+.tm-sec h4{margin:0 0 8px;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.tm-report{background:rgba(120,150,255,.06);border:1px solid var(--line);border-radius:8px;padding:12px 14px;font-size:12.5px;line-height:1.65;color:var(--tx);white-space:pre-wrap;max-height:220px;overflow-y:auto}
+.tm-agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.tm-agent-card{background:rgba(120,150,255,.05);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:11px;cursor:pointer;transition:border-color .15s}
+.tm-agent-card:hover{border-color:var(--acc);background:rgba(120,150,255,.1)}
+.tm-events{max-height:130px;overflow-y:auto;font-size:11px;display:flex;flex-direction:column;gap:4px}
+.tm-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+#lc{position:fixed;left:12px;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:8px;align-items:flex-start;max-width:calc(100% - 24px);z-index:3}#lc .p{position:static}
+#wm{padding:6px 8px;width:290px;max-width:100%}#wm button{padding:4px 9px;font-size:12px}#wm .wr{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 6px}#wm input{width:100%;accent-color:var(--acc)}#wm.c #wb{display:none}
+#side{transition:transform .3s ease,visibility 0s}#side.hide{transform:translateX(calc(100% + 24px));visibility:hidden;transition:transform .3s ease,visibility 0s .3s}
+#sb{z-index:5;right:358px;top:calc(12px + env(safe-area-inset-top,0px));padding:6px 10px;color:var(--tx);cursor:pointer;transition:right .3s ease}body.sh #sb{right:12px}
+@media (max-width:820px){#side.hide{transform:translateY(calc(100% + 24px))}#sb{right:12px;top:auto;bottom:calc(44vh + 20px)}body.sh #sb{bottom:calc(12px + env(safe-area-inset-bottom,0px))}body.sh #info{bottom:calc(60px + env(safe-area-inset-bottom,0px))}#wm{width:100%}}
+#info h3{margin:0 0 2px;font-size:15px}#info .r{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.m{color:var(--mut);font-size:12px;margin:2px 0}
+#labels button.dl{position:fixed;left:0;top:0;transform:translate(-50%,-100%);background:var(--panel);border:1px solid var(--line);color:var(--tx);padding:3px 9px;font-size:11px;white-space:nowrap;will-change:transform}
+.dl span{color:var(--mut);margin-left:6px}
+#hint{left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));padding:4px 12px;color:var(--mut);font-size:11px}
+@media (max-width:820px){#side{top:auto;left:12px;width:auto;height:44vh}#info{bottom:calc(44vh + 64px);width:calc(100% - 24px)}#hint{display:none}#hud{padding:6px 10px}}
+</style>
+</head>
+<body>
+<div id="stage"></div><div id="labels"></div>
+<div id="lc"><div class="p" id="hud"><div><b>AI City</b><small>Simulated orchestrator</small></div><div><b id="hb">42</b><small>bots</small></div><div><b id="ha">0</b><small>on tasks</small></div><div><b id="ht">0</b><small>running</small></div><button class="g" id="zi" aria-label="Zoom in">+</button><button class="g" id="zo" aria-label="Zoom out">−</button><button class="g" id="rv">Overview</button></div>
+<div class="p" id="wm" role="group" aria-label="World mode"></div></div>
+<button class="p" id="sb" aria-expanded="true" aria-label="Show or hide the tasks panel">Hide panel</button>
+<div class="p" id="info"></div>
+<div class="p" id="hint">Drag to orbit · scroll or pinch to zoom · two fingers to pan · click a bot or district</div>
+<aside class="p" id="side">
+<section><h2>Assign a task</h2>
+<select id="fd" aria-label="District"></select>
+<textarea id="ft" placeholder="Investigate the market for compact e-bikes"></textarea>
+<label><input type="checkbox" id="ff"> Make this run fail (tests the recovery state)</label>
+<button id="fs">Submit task</button>
+<div class="note">The orchestrator here runs in your browser and emits the real event schema. Slow roaming is ambient motion, not work. Click any task to inspect its full progress, workforce, and findings.</div></section>
+<section><h2>Tasks</h2><div id="tasks"></div></section>
+<section><h2 id="fh">Activity</h2><div id="feed"></div></section>
+</aside>
+<div id="tm-backdrop"></div>
+<div id="tm" class="p" role="dialog" aria-modal="true" aria-label="Task Information">
+  <div class="tm-head">
+    <div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="chip" id="tm-status">status</span>
+        <span id="tm-dept" style="color:var(--mut);font-size:11px">District</span>
+        <time id="tm-time" style="color:var(--mut);font-size:11px"></time>
+      </div>
+      <h3 id="tm-title">Task title</h3>
+    </div>
+    <button class="g" id="tm-close" aria-label="Close task details">✕</button>
+  </div>
+  <div class="tm-body">
+    <div class="tm-sec">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span>Execution Progress</span>
+        <span id="tm-pct" style="font-weight:600">0%</span>
+      </div>
+      <div class="bar"><i id="tm-bar" style="width:0%"></i></div>
+    </div>
+    <div class="tm-sec">
+      <h4>Assigned District Workforce (6 Agents)</h4>
+      <div id="tm-agents" class="tm-agents-grid"></div>
+    </div>
+    <div class="tm-sec">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <h4 style="margin:0">Task Deliverable & Intelligence Report</h4>
+        <button class="g" id="tm-copy" style="font-size:11px;padding:2px 8px">Copy report</button>
+      </div>
+      <div id="tm-deliverable" class="tm-report"></div>
+    </div>
+    <div class="tm-sec">
+      <h4>Task Activity Transcript</h4>
+      <div id="tm-events" class="tm-events"></div>
+    </div>
+  </div>
+  <div class="tm-foot">
+    <button id="tm-focus">Focus camera on district</button>
+    <button class="g" id="tm-filter-feed">Filter activity feed</button>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SC={idle:"#6b7aa3",walking:"#7aa2ff",working:"#3ddc97",thinking:"#b58cff",collaborating:"#ffb347",transferring_data:"#38e1ff",reviewing:"#ffd23f",waiting:"#ff9f6b",celebrating:"#ff6bd6",error:"#ff4d5e"};
+const NAMES="Mako,Lumi,Nova,Zara,Kiyo,Orbi,Pixel,Echo,Atlas,Juno,Rex,Sol,Vega,Ziggy,Bolt,Cleo,Dash,Ember,Fynn,Gizmo,Halo,Iris,Jett,Kai,Luna,Milo,Nico,Opal,Pip,Quill,Rio,Sage,Tilt,Umi,Vox,Wren,Xeno,Yuki,Zed,Ada,Bex,Cog".split(",");
+const TRAITS=["curious","meticulous","calm","bold","playful","skeptical"];
+const DEFS=[
+["command","Command center","Plan, assign and combine results from every district.",0x5b8cff,["Coordinator","Task router","Progress monitor","Resource planner","Quality liaison","Briefing lead"]],
+["research","Research institute","Turn questions into verified findings.",0x38e1ff,["Research manager","Web researcher","Data analyst","Competitor analyst","Fact checker","Research synthesizer"]],
+["marketing","Marketing district","Turn audience insight into campaigns.",0xff5d7a,["Marketing manager","Audience researcher","Campaign planner","Performance analyst","Strategy reviewer","Campaign synthesizer"]],
+["design","Design studio","Shape concepts into reviewed visuals.",0xb58cff,["Design lead","UI designer","Brand designer","3D artist","Design reviewer","Handoff coordinator"]],
+["finance","Finance tower","Produce validated financial analysis.",0x3ddc97,["Finance lead","Financial analyst","Forecast modeler","Budget planner","Validator","Report compiler"]],
+["cost","Cost analysis center","Understand costs, margins and scenarios.",0xffb347,["Cost lead","Expense analyst","Margin modeler","Scenario planner","Cost validator","Cost summarizer"]],
+["content","Content factory","Move briefs to approved content.",0xffd23f,["Content manager","Brief researcher","Writer","Script writer","Editor","Delivery coordinator"]]];
+const DN={};DEFS.forEach(d=>DN[d[0]]=d[1]);
+
+/* ---------- event store + bus (swap publish() for a WebSocket from FastAPI) ---------- */
+const LS="aicity.v2";let store={events:[],tasks:{}};
+try{const s=JSON.parse(localStorage.getItem(LS));if(s)store=s}catch(e){}
+for(const t of Object.values(store.tasks))if(["queued","running","waiting"].includes(t.status))t.status="interrupted";
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify({events:store.events.slice(-200),tasks:store.tasks}))}catch(e){}};
+function ingest(e){e.id=e.id||uid();e.ts=e.ts||Date.now();store.events.push(e);save();apply(e);renderFeed();dirty=true}
+const publish=(type,o)=>ingest({type,...o});
+let ws=null;function connect(url){ws=new WebSocket(url);ws.onmessage=m=>{try{ingest(JSON.parse(m.data))}catch(e){}}}
+window.AICity={ingest,connect};
+
+/* ---------- scene ---------- */
+const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devicePixelRatio,innerWidth<820?1.5:2));$("#stage").appendChild(R.domElement);R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.15;R.shadowMap.enabled=true;R.shadowMap.type=THREE.PCFSoftShadowMap;
+const S=new THREE.Scene();S.fog=new THREE.FogExp2(0xbcd8f0,.0065);
+const C=new THREE.PerspectiveCamera(50,1,.1,900);
+const SUN=new THREE.Vector3(70,62,42);const HL=new THREE.HemisphereLight(0xbfdcff,0x4a6a35,.7);S.add(HL);
+const dl=new THREE.DirectionalLight(0xfff1d6,1.5);dl.position.copy(SUN);dl.castShadow=true;dl.shadow.mapSize.set(2048,2048);Object.assign(dl.shadow.camera,{left:-52,right:52,top:52,bottom:-52,near:1,far:260});dl.shadow.bias=-.0006;S.add(dl);
+const sky=new THREE.Mesh(new THREE.SphereGeometry(600,32,16),new THREE.ShaderMaterial({side:THREE.BackSide,depthWrite:false,uniforms:{sd:{value:SUN.clone().normalize()},top:{value:new THREE.Color(0x2159c7)},hor:{value:new THREE.Color(0xbcdbf5)},sc:{value:new THREE.Color(0xfff1d6)}},vertexShader:"varying vec3 v;void main(){v=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",fragmentShader:"varying vec3 v;uniform vec3 sd,top,hor,sc;void main(){float h=clamp(v.y,0.,1.);vec3 c=mix(hor,top,pow(h,.55));float s=max(dot(v,sd),0.);c+=sc*pow(s,22.)*.5+mix(sc,vec3(1.),.6)*pow(s,1200.)*4.;gl_FragColor=vec4(c,1.);}"}));S.add(sky);
+{const c=document.createElement("canvas");c.width=c.height=512;const x=c.getContext("2d");x.fillStyle="#4d7a38";x.fillRect(0,0,512,512);
+for(let i=0;i<6000;i++){x.fillStyle=`hsla(${80+Math.random()*35},${35+Math.random()*25}%,${20+Math.random()*22}%,.35)`;x.fillRect(Math.random()*512,Math.random()*512,2+Math.random()*9,2+Math.random()*9)}
+const tx=new THREE.CanvasTexture(c);tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(60,60);tx.anisotropy=8;
+const gg=new THREE.PlaneGeometry(900,900,90,90),pa=gg.attributes.position,col=new Float32Array(pa.count*3);
+for(let i=0;i<pa.count;i++){const X=pa.getX(i),Y=pa.getY(i),v=.78+.22*(Math.sin(X*.05)*Math.sin(Y*.043)+.5*Math.sin(X*.13+Y*.09));col.set([v,v*1.02,v*.9],i*3)}
+gg.setAttribute("color",new THREE.BufferAttribute(col,3));
+const gnd=new THREE.Mesh(gg,new THREE.MeshStandardMaterial({map:tx,vertexColors:true,roughness:1}));gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;S.add(gnd)}
+
+{const p=[];for(let i=0;i<350;i++){const a=Math.random()*6.28,e=Math.random()*1.3+.1,r=160;p.push(Math.cos(a)*Math.cos(e)*r,Math.sin(e)*r,Math.sin(a)*Math.cos(e)*r)}
+const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(p,3));S.add(window.stars=new THREE.Points(g,new THREE.PointsMaterial({size:.8,color:0x9fb4ff,fog:false,transparent:true,opacity:0})))}
+const G={body:new THREE.CylinderGeometry(.34,.4,.8,12),head:new THREE.SphereGeometry(.34,16,12),visor:new THREE.BoxGeometry(.5,.16,.2),arm:new THREE.BoxGeometry(.1,.42,.1),ring:new THREE.RingGeometry(.55,.68,24),dot:new THREE.SphereGeometry(.07,8,6),hit:new THREE.CylinderGeometry(1,1,2.2,8)};
+const bots=[],byId={},depts={},hits=[],pads=[];
+DEFS.forEach((d,i)=>{
+ const a=(i-1)*Math.PI/3,rr=i?25:0,c=new THREE.Vector3(Math.cos(a)*rr,0,Math.sin(a)*rr);
+ const D={id:d[0],name:d[1],goal:d[2],col:d[3],c,bots:[],mat:new THREE.MeshStandardMaterial({color:d[3],roughness:.45,metalness:.2})};depts[D.id]=D;
+ const em=new THREE.MeshStandardMaterial({color:new THREE.Color(d[3]).lerp(new THREE.Color(0xdfe6f0),.6),emissive:d[3],emissiveIntensity:.14,roughness:.22,metalness:.55});(window.EMS=window.EMS||[]).push(em);
+ const pad=new THREE.Mesh(new THREE.CylinderGeometry(8.5,8.8,.3,48),new THREE.MeshStandardMaterial({color:0xaab2c0,metalness:.1,roughness:.85}));pad.position.copy(c);pad.receiveShadow=true;pad.userData.dept=D.id;S.add(pad);pads.push(pad);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(8.6,.08,8,64),new THREE.MeshBasicMaterial({color:d[3]}));ring.rotation.x=Math.PI/2;ring.position.set(c.x,.2,c.z);S.add(ring);
+ const tb=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,.7,24),em);tb.position.set(c.x,.5,c.z);S.add(tb);
+ D.holo=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,1.4,24,1,true),new THREE.MeshBasicMaterial({color:d[3],transparent:true,opacity:.06,side:2,depthWrite:false}));D.holo.position.set(c.x,1.5,c.z);S.add(D.holo);
+ for(let k=0;k<3;k++){const ang=i?a+(k-1)*.45:k*2.1,h=5+Math.random()*9,dist=i?11.5:12;
+  const b=new THREE.Mesh(new THREE.BoxGeometry(2.4,h,2.4),em);b.position.set(c.x+Math.cos(ang)*dist+(i?Math.cos(a)*2:0),h/2,c.z+Math.sin(ang)*dist+(i?Math.sin(a)*2:0));b.castShadow=b.receiveShadow=true;S.add(b)}
+ if(!i){const sp=new THREE.Mesh(new THREE.CylinderGeometry(.12,.5,18,8),new THREE.MeshBasicMaterial({color:d[3],transparent:true,opacity:.5}));sp.position.y=9;S.add(sp)}
+ else{const rd=new THREE.Mesh(new THREE.BoxGeometry(2.6,.08,16),new THREE.MeshStandardMaterial({color:0x3a3f4b,roughness:.95}));rd.position.set(Math.cos(a)*12.5,.05,Math.sin(a)*12.5);rd.rotation.y=Math.atan2(Math.cos(a),Math.sin(a));S.add(rd)}
+ for(let j=0;j<6;j++){
+  const ang=j*Math.PI/3,desk=new THREE.Vector3(c.x+Math.cos(ang)*4.4,0,c.z+Math.sin(ang)*4.4),scr=new THREE.Vector3(c.x+Math.cos(ang)*5.6,0,c.z+Math.sin(ang)*5.6);
+  const dk=new THREE.Mesh(new THREE.BoxGeometry(1.3,.7,.6),em);dk.position.set(scr.x,.45,scr.z);dk.rotation.y=-ang+Math.PI/2;S.add(dk);
+  const sc=new THREE.Mesh(new THREE.PlaneGeometry(.9,.55),new THREE.MeshBasicMaterial({color:d[3],transparent:true,opacity:.55,side:2}));sc.position.set(scr.x,1.25,scr.z);sc.rotation.y=-ang+Math.PI/2;S.add(sc);
+  mkBot(D,j,desk,scr,new THREE.Vector3(c.x+Math.cos(j*Math.PI/3+.5)*2.7,0,c.z+Math.sin(j*Math.PI/3+.5)*2.7))}
+});
+function mkBot(D,j,desk,scr,slot){
+ const n=bots.length,g=new THREE.Group(),m=(c,o={})=>new THREE.MeshBasicMaterial({color:c,...o});
+ const body=new THREE.Mesh(G.body,D.mat);body.position.y=.6;body.castShadow=true;g.add(body);
+ const hg=new THREE.Group();hg.position.y=1.3;hg.add(new THREE.Mesh(G.head,new THREE.MeshStandardMaterial({color:0xe6ecff,roughness:.4})));
+ const vz=new THREE.Mesh(G.visor,m(0x0a1030));vz.position.set(0,.03,.24);hg.add(vz);const ey=new THREE.Mesh(new THREE.BoxGeometry(.36,.05,.05),m(0x38e1ff));ey.position.set(0,.03,.35);hg.add(ey);g.add(hg);
+ const arms=[-1,1].map(s=>{const p=new THREE.Group();p.position.set(s*.46,.95,0);const a=new THREE.Mesh(G.arm,D.mat);a.position.y=-.2;p.add(a);g.add(p);return p});
+ const ring=new THREE.Mesh(G.ring,m(0x6b7aa3,{transparent:true,opacity:.85,side:2}));ring.rotation.x=-Math.PI/2;ring.position.y=.03;g.add(ring);
+ const beacon=new THREE.Mesh(G.dot,m(0x6b7aa3));beacon.scale.setScalar(1.7);beacon.position.y=2.1;beacon.visible=false;g.add(beacon);
+ const dots=new THREE.Group();dots.position.y=2.1;dots.visible=false;for(let k=0;k<3;k++){const d=new THREE.Mesh(G.dot,m(0xb58cff));d.position.x=.3;d.rotation.y=k*2.1;const w=new THREE.Group();w.rotation.y=k*2.1;w.add(d);dots.add(w)}g.add(dots);
+ const hit=new THREE.Mesh(G.hit,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));hit.position.y=.95;g.add(hit);
+ const b={id:D.id+"-"+j,name:NAMES[n],D,idx:j,role:D.roles?.[j]||DEFS.find(x=>x[0]===D.id)[4][j],trait:TRAITS[(n*5+j)%6],g,hg,arms,ring,beacon,dots,desk,scr,slot,pos:g.position,dest:desk.clone(),vel:new THREE.Vector3(),state:"idle",base:"idle",next:"idle",face:scr,speed:1.6+Math.random()*1,amb:2+Math.random()*14,task:null,msgs:[],ph:Math.random()*6,until:0,after:null,ambient:false,yaw:0,yawT:0,inspect:0,flash:0,done:[]};
+ g.position.copy(desk);hit.userData.bot=b;hits.push(hit);S.add(g);bots.push(b);byId[b.id]=b;D.bots.push(b);
+}
+/* environment: lake, mountains, trees, clouds */
+const LK=new THREE.Vector2(-52,38);
+const WT=(()=>{const c=document.createElement("canvas");c.width=c.height=256;const x=c.getContext("2d");x.fillStyle="#bcd8ee";x.fillRect(0,0,256,256);
+ for(let i=0;i<170;i++){const px=Math.random()*256,py=Math.random()*256,rx=6+Math.random()*16,ry=1+Math.random()*2.5;x.fillStyle=`rgba(255,255,255,${.1+Math.random()*.25})`;for(const dx of[-256,0,256])for(const dy of[-256,0,256]){x.beginPath();x.ellipse(px+dx,py+dy,rx,ry,0,0,6.3);x.fill()}}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(2,2);t.anisotropy=8;return t})();
+const WM=new THREE.MeshStandardMaterial({color:0x2a7fb8,roughness:.06,metalness:.6,transparent:true,opacity:.93,map:WT,bumpMap:WT,bumpScale:.8,side:2}),RV=[];
+function ribbon(pts,w,mat,y){const cv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(p[0],y,p[1]))),P=cv.getSpacedPoints(70),L=cv.getLength()/12,pos=[],uv=[],idx=[];
+ P.forEach((p,i)=>{const q=P[Math.min(i+1,70)],o=P[Math.max(i-1,0)],tx=q.x-o.x,tz=q.z-o.z,l=Math.hypot(tx,tz)||1,nx=-tz/l,nz=tx/l,ww=w*(1+.18*Math.sin(i*.45));
+  pos.push(p.x-nx*ww,y,p.z-nz*ww,p.x+nx*ww,y,p.z+nz*ww);uv.push(0,i/70*L,1,i/70*L);if(i<70){const a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}if(mat===WM)RV.push(p)});
+ const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,mat);m.receiveShadow=true;S.add(m)}
+{const BK=new THREE.MeshStandardMaterial({color:0xcdbd8c,roughness:1,side:2});
+ for(const p of[[[-170,-150],[-110,-80],[-78,-25],[-68,15],[-52,38]],[[-52,38],[-42,68],[-18,105],[22,150],[70,200]]]){ribbon(p,6.8,BK,.035);ribbon(p,4.6,WM,.06)}}
+{const sd=new THREE.Mesh(new THREE.CircleGeometry(16,48),new THREE.MeshStandardMaterial({color:0xcdbd8c,roughness:1}));sd.rotation.x=-Math.PI/2;sd.position.set(LK.x,.03,LK.y);S.add(sd);
+ const wt=new THREE.Mesh(new THREE.CircleGeometry(13,48),WM);wt.rotation.x=-Math.PI/2;wt.position.set(LK.x,.06,LK.y);S.add(wt)}
+for(let i=0;i<34;i++){const a=i/34*6.28+Math.random()*.1,r=170+Math.random()*50,h=30+Math.random()*50,rb=18+Math.random()*20,gr=new THREE.Group();
+ const m=new THREE.Mesh(new THREE.ConeGeometry(rb,h,6),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.6,.18,.34+Math.random()*.1),flatShading:true,roughness:1}));
+ const sn=new THREE.Mesh(new THREE.ConeGeometry(rb*.3,h*.3,6),new THREE.MeshStandardMaterial({color:0xf4f8ff,flatShading:true,roughness:.8}));sn.position.y=h/2-h*.15+.02;
+ gr.add(m,sn);gr.position.set(Math.cos(a)*r,h/2-2,Math.sin(a)*r);gr.rotation.y=Math.random()*3;S.add(gr)}
+{const N=320,tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.18,.28,1.6,6),new THREE.MeshStandardMaterial({color:0x5a3d28}),N),fo=new THREE.InstancedMesh(new THREE.ConeGeometry(1.3,3.6,7),new THREE.MeshStandardMaterial({color:0xffffff,flatShading:true}),N);
+ const m=new THREE.Matrix4(),q=new THREE.Quaternion(),cl=new THREE.Color(),cs=Object.values(depts).map(d=>d.c);let n=0,tries=0;
+ while(n<N&&tries++<4000){const a=Math.random()*6.28,r=14+Math.random()*110,x=Math.cos(a)*r,z=Math.sin(a)*r;
+  if(cs.some(c=>Math.hypot(x-c.x,z-c.z)<17)||Math.hypot(x-LK.x,z-LK.y)<17||RV.some(v=>Math.hypot(x-v.x,z-v.z)<9))continue;
+  const s=.7+Math.random()*.9;m.compose(new THREE.Vector3(x,.8*s,z),q,new THREE.Vector3(s,s,s));tr.setMatrixAt(n,m);
+  m.compose(new THREE.Vector3(x,3.4*s,z),q,new THREE.Vector3(s,s,s));fo.setMatrixAt(n,m);fo.setColorAt(n,cl.setHSL(.28+Math.random()*.08,.5,.2+Math.random()*.12));n++}
+ tr.count=fo.count=n;tr.castShadow=fo.castShadow=true;S.add(tr,fo)}
+const clouds=new THREE.Group(),CM=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.8,fog:false});
+for(let i=0;i<14;i++){const g=new THREE.Group(),a=Math.random()*6.28,r=60+Math.random()*140;for(let k=0;k<5;k++){const s=new THREE.Mesh(new THREE.SphereGeometry(5+Math.random()*5,10,8),CM);s.scale.y=.45;s.position.set(k*7-14,Math.random()*2,Math.random()*5);g.add(s)}g.position.set(Math.cos(a)*r,55+Math.random()*30,Math.sin(a)*r);g.rotation.y=Math.random()*3;clouds.add(g)}S.add(clouds);
+/* ambient city life */
+const drones=[],streams=[];
+if(!RM){for(let i=0;i<8;i++){const m=new THREE.Mesh(new THREE.OctahedronGeometry(.3),new THREE.MeshBasicMaterial({color:0x9fd0ff}));S.add(m);drones.push({m,r:14+Math.random()*22,s:(.08+Math.random()*.1)*(i%2?1:-1),h:7+Math.random()*5,p:Math.random()*6})}
+ const pp=new Float32Array(90*3),sg=new THREE.BufferGeometry();sg.setAttribute("position",new THREE.BufferAttribute(pp,3));const pts=new THREE.Points(sg,new THREE.PointsMaterial({size:.35,color:0x6fb0ff,transparent:true,opacity:.8}));S.add(pts);streams.push({pp,sg,off:Array.from({length:90},()=>Math.random())})}
+
+/* ---------- state machine ---------- */
+const now=()=>performance.now();let dirty=true;
+function setS(b,s){b.state=s;b.ring.material.color.set(SC[s]);b.beacon.material.color.set(SC[s]);b.dots.visible=s==="thinking";b.beacon.visible=!["idle","walking","thinking"].includes(s);dirty=true}
+function go(b,p,next,face,amb){b.dest.set(p.x,0,p.z);b.next=next;b.face=face||null;b.ambient=!!amb;b.until=0;b.after=null;setS(b,"walking")}
+function setBase(b,s){b.base=s;if(b.state==="walking")b.next=s;else if(!b.until)setS(b,s)}
+function transient(b,s,ms,face){if(b.state==="error")return;if(face)b.face=face;setS(b,s);b.until=now()+ms;b.after=()=>{if(b.state===s)setS(b,b.base)}}
+function arrive(b){const s=b.next;setS(b,s);if(b.inspectNext){b.inspectNext=false;b.inspect=now()+4500}}
+const home=b=>go(b,b.desk,"idle",b.scr);
+const packets=[];
+function packet(a,bb){const m=new THREE.Mesh(new THREE.SphereGeometry(.2,10,8),new THREE.MeshBasicMaterial({color:a.D.col}));S.add(m);packets.push({m,a:a.pos.clone(),b:bb,t:0})}
+
+/* ---------- apply backend events to world ---------- */
+let activeTaskId=null;
+function synthesizeReport(did,text){
+ const dName=DN[did]||did,q=String(text||"Task").trim();
+ const reports={
+  research:`### EXECUTIVE RESEARCH REPORT: "${q.toUpperCase()}"\n\n`+
+   `**1. Market & Signal Intelligence**\n`+
+   `• Primary Driver: Strong demand for agile, low-carbon micro-mobility in high-density urban corridors.\n`+
+   `• Data Signal: 78.4% favorable consumer sentiment on modular folding designs; battery weight remains key concern.\n`+
+   `• Whitespace: Mid-tier price point ($850–$1,350) with swappable battery packs and IPX6 weather resistance.\n\n`+
+   `**2. Competitive Positioning Matrix**\n`+
+   `• Incumbents: Heavy commuter frames (>22kg) with non-removable power systems.\n`+
+   `• Our Vector: Ultralight magnesium-aluminum alloy architecture (14.8kg) with integrated smartphone telemetry.\n\n`+
+   `**3. Synthesis & District Sign-Off**\n`+
+   `• Recommendation: Proceed with Phase 2 validation prototype. Field tests confirmed feasibility across all 6 research agents.`,
+  marketing:`### STRATEGIC CAMPAIGN BRIEF: "${q.toUpperCase()}"\n\n`+
+   `**1. Narrative Architecture & Positioning**\n`+
+   `• Core Message: "Zero commute friction. Uncompromised urban velocity."\n`+
+   `• Target Audience: Tech-forward professionals (24–44) seeking autonomous micro-transit solutions.\n\n`+
+   `**2. Multi-Channel Distribution Mix**\n`+
+   `• 45% Targeted digital acquisition (high-intent mobility & sustainability search).\n`+
+   `• 35% Metropolitan pop-up activations and interactive commuter trials.\n`+
+   `• 20% Technical creator partnerships and video teardowns.\n\n`+
+   `**3. Target Conversion KPIs**\n`+
+   `• Projected 4.1x ROAS across first 90 days with 19% organic referral velocity.`,
+  design:`### DESIGN SPECIFICATION & COMPONENT SYSTEM: "${q.toUpperCase()}"\n\n`+
+   `**1. Visual Identity & Form Factor**\n`+
+   `• Aesthetic: Modern aerodynamic minimalism with matte obsidian finish and electric cobalt accents.\n`+
+   `• Ergonomics: Quick-release magnetic folding latch and anti-vibration silicone touchpoints.\n\n`+
+   `**2. Interface & Telemetry HUD**\n`+
+   `• Cockpit: High-contrast ambient-sensing OLED display with battery, speed, and navigation breadcrumbs.\n`+
+   `• Mobile Sync: Low-power Bluetooth pairing with automated security locking.\n\n`+
+   `**3. Asset Handoff**: 3D mesh blueprints, component tokens, and production files verified.`,
+  finance:`### FINANCIAL PROJECTION & UNIT ECONOMICS: "${q.toUpperCase()}"\n\n`+
+   `**1. Unit Economics & Cost Structure**\n`+
+   `• Bill of Materials (BOM) Target: $440/unit.\n`+
+   `• Target Retail Price: $1,149 (Gross Margin: 61.7%).\n\n`+
+   `**2. Capital Allocation & Break-Even**\n`+
+   `• Tooling & validation Capex: $360,000.\n`+
+   `• Break-even threshold: 1,480 units (projected Month 5 post-rollout).\n\n`+
+   `**3. Risk Matrix**: Supply chain dual-sourcing verified; working capital buffer approved.`,
+  cost:`### COST OPTIMIZATION ANALYSIS: "${q.toUpperCase()}"\n\n`+
+   `**1. Cost Attribution Breakdown**\n`+
+   `• Powertrain & Battery: 42% ($185/unit)\n`+
+   `• Structural Frame & Latches: 32% ($141/unit)\n`+
+   `• Electronics & Sensors: 16% ($70/unit)\n`+
+   `• Assembly & Testing: 10% ($44/unit)\n\n`+
+   `**2. Optimization Levers Unlocked**\n`+
+   `• Standardized CNC bracket molds achieve $14.20/unit savings (-3.2% BOM).\n`+
+   `• Direct supplier contract on battery cells yields +3.8% margin expansion.`,
+  content:`### CONTENT SUITE & EDITORIAL BLUEPRINT: "${q.toUpperCase()}"\n\n`+
+   `**1. Core Narrative Angles**\n`+
+   `• "The 15-Minute City in Practice: Commuting Without Gridlock"\n`+
+   `• "Under the Hood: Engineering the Lightest Folding Commuter in Its Class"\n\n`+
+   `**2. Deliverable Package Completed**\n`+
+   `• Comprehensive whitepaper (2,200 words) with verified technical benchmarks.\n`+
+   `• 5-part video narrative sequence and customer onboarding guide.\n`+
+   `• SEO metadata and press announcement package signed off.`,
+  command:`### MULTI-DISTRICT OPERATIONAL PLAN: "${q.toUpperCase()}"\n\n`+
+   `**1. Inter-Department Coordination**\n`+
+   `• Research, Finance, Design, and Content milestones fully aligned.\n`+
+   `• Critical path dependencies scheduled with zero blocking constraints.\n\n`+
+   `**2. Staged Rollout Timeline**\n`+
+   `• Phase A: Subtask delegation and parallel execution [COMPLETE]\n`+
+   `• Phase B: Peer review, validation testing, and data handoffs [COMPLETE]\n`+
+   `• Phase C: Final master briefing and sign-off [COMPLETE]\n\n`+
+   `**3. Operational Status**: Fully approved for strategic deployment across all teams.`
+ };
+ return reports[did]||`Task report for "${q}" completed by ${dName}. All 6 assigned district agents verified findings.`;
+}
+
+function apply(e){
+ const B=byId[e.agent],T=store.tasks[e.task],To=byId[e.to];
+ switch(e.type){
+ case"task.created":store.tasks[e.task]={id:e.task,dept:e.department,text:e.text,status:"queued",progress:0,created:e.ts,agents:[]};break;
+ case"task.assigned":if(!B)break;B.task=e.task;B.base="collaborating";T&&!T.agents.includes(B.id)&&T.agents.push(B.id);go(B,B.slot,"collaborating",B.D.c);break;
+ case"agent.started":if(!B||!T)break;if(T.status==="queued")T.status="running";B.task=e.task;B.done=false;B.base=e.state||"working";
+  if(B.idx===0)go(B,B.slot,B.base,B.D.c);else go(B,B.desk,B.base,B.scr);break;
+ case"agent.progress":if(T&&!["failed","done"].includes(T.status)){T.status="running";if(e.progress!=null)T.progress=e.progress}if(B&&e.state)setBase(B,e.state);if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.message_sent":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:e.text});To.msgs.push({t:e.ts,from:B.name,text:e.text});To.face=B.pos;transient(B,"collaborating",1800,To.pos)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.handoff":if(B&&To){B.msgs.push({t:e.ts,to:To.name,text:"Handoff: "+e.text});To.msgs.push({t:e.ts,from:B.name,text:"Handoff: "+e.text});B.base="idle";transient(B,"transferring_data",1500,To.pos);packet(B,To)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.waiting_for_input":if(B){setBase(B,"waiting");T&&(T.status="waiting")}break;
+ case"agent.review_started":if(!B)break;{if(T)T.status="running";const tg=byId[e.target];B.base="reviewing";if(tg)go(B,{x:tg.scr.x*.82+tg.D.c.x*.18,z:tg.scr.z*.82+tg.D.c.z*.18},"reviewing",tg.pos);else go(B,B.slot,"reviewing",B.D.c)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.completed":if(B){B.done=true;B.base="idle";if(B.ambient===false)home(B)}if(activeTaskId===e.task)updateTaskModal(e.task);break;
+ case"agent.recovered":if(B){B.task=null;home(B)}break;
+ case"task.completed":if(!T)break;T.status="done";T.progress=1;T.deliverable=e.deliverable||e.text;
+  if(activeTaskId===e.task)updateTaskModal(e.task);
+  bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;b.done=false;b.dest.copy(b.pos);setS(b,"celebrating");b.until=now()+2400+Math.random()*600;b.after=()=>home(b)});break;
+ case"task.failed":if(!T)break;T.status="failed";T.err=e.text;T.failedAgent=e.agent;
+  if(activeTaskId===e.task)updateTaskModal(e.task);
+  bots.filter(b=>b.task===e.task).forEach(b=>{b.task=null;if(b===B){b.dest.copy(b.pos);b.until=0;b.after=null;b.base="error";setS(b,"error")}else home(b)});if(B&&!B.task&&B.state!=="error"){B.base="error";setS(B,"error")}break}
+}
+/* ---------- demo orchestrator (stand-in for FastAPI) ---------- */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms*(.8+Math.random()*.5)));
+async function run(did,text,fail){
+ const B=depts[did].bots,tid=uid(),P=(t,o)=>publish(t,{task:tid,department:did,...o}),dead=()=>store.tasks[tid].status==="failed";
+ P("task.created",{text});await sleep(900);
+ P("task.assigned",{agent:B[0].id});await sleep(1400);
+ P("agent.started",{agent:B[0].id,state:"thinking",text:"Drafting the task plan"});await sleep(2400);
+ for(const w of[1,2,3]){P("agent.message_sent",{agent:B[0].id,to:B[w].id,text:"Assigned: "+B[w].role+" subtask"});P("task.assigned",{agent:B[w].id});await sleep(500)}
+ await sleep(1200);
+ try{await Promise.all([1,2,3].map(async(w,i)=>{
+  await sleep(i*600);P("agent.started",{agent:B[w].id,state:"thinking",text:"Starting "+B[w].role+" subtask"});
+  await sleep(2200+i*400);if(dead())throw 0;P("agent.progress",{agent:B[w].id,state:"working",text:"Working on subtask",progress:.25+i*.05});
+  await sleep(3200);
+  if(fail&&i===1){P("task.failed",{agent:B[w].id,text:B[w].name+" could not complete the subtask (simulated failure)"});throw 0}
+  if(dead())throw 0;P("agent.completed",{agent:B[w].id});P("agent.handoff",{agent:B[w].id,to:B[4].id,text:"Results from "+B[w].role});
+  if(!dead())P("agent.progress",{agent:B[w].id,progress:.4+i*.08})}))}catch(x){return}
+ await sleep(1200);P("agent.started",{agent:B[4].id,state:"thinking",text:"Reviewing handed-off work"});
+ P("agent.review_started",{agent:B[4].id,target:B[2].id,progress:.65});await sleep(3000);
+ P("agent.completed",{agent:B[4].id});P("agent.handoff",{agent:B[4].id,to:B[5].id,text:"Reviewed material"});
+ await sleep(1500);P("agent.started",{agent:B[5].id,state:"working",text:"Combining reviewed material",progress:.8});await sleep(3000);
+ P("agent.completed",{agent:B[5].id});P("agent.handoff",{agent:B[5].id,to:B[0].id,text:"Combined result"});await sleep(1500);
+ P("agent.review_started",{agent:B[0].id,target:B[5].id,progress:.92});await sleep(2400);
+ P("agent.completed",{agent:B[0].id});
+ const rep=synthesizeReport(did,text);
+ P("task.completed",{text:"Completed across 6 agents in "+DN[did]+". Final deliverable ready for review.",deliverable:rep});
+}
+function retry(tid){const T=store.tasks[tid];if(!T)return;if(T.failedAgent)publish("agent.recovered",{task:tid,department:T.dept,agent:T.failedAgent});T.status="retried";run(T.dept,T.text,false);dirty=true}
+
+/* ---------- task inspection modal ---------- */
+function openTaskModal(tid){
+ const T=store.tasks[tid];if(!T)return;
+ activeTaskId=tid;
+ updateTaskModal(tid);
+ $("#tm").style.display="flex";$("#tm-backdrop").style.display="block";
+}
+function updateTaskModal(tid){
+ const T=store.tasks[tid];if(!T)return;
+ const D=depts[T.dept];
+ $("#tm-title").textContent=T.text;
+ $("#tm-dept").textContent=DN[T.dept]||T.dept;
+ $("#tm-status").textContent=T.status;
+ $("#tm-status").style.color=T.status==="done"?"#3ddc97":T.status==="failed"?"#ff4d5e":"var(--tx)";
+ $("#tm-status").style.borderColor=T.status==="done"?"#3ddc97":T.status==="failed"?"#ff4d5e":"var(--line)";
+ $("#tm-time").textContent=tm(T.created);
+ const pct=Math.round((T.progress||0)*100);
+ $("#tm-pct").textContent=pct+"%";
+ $("#tm-bar").style.width=pct+"%";
+ const bList=D?D.bots:[];
+ $("#tm-agents").innerHTML=bList.map(b=>`
+  <div class="tm-agent-card" data-b="${b.id}">
+   <div style="display:flex;align-items:center;gap:6px">
+    <span class="dot" style="background:${SC[b.state]}"></span>
+    <b>${esc(b.name)}</b>
+   </div>
+   <div style="color:var(--mut);font-size:10.5px;margin-top:2px">${esc(b.role)}</div>
+   <div style="font-size:10px;margin-top:2px;color:${SC[b.state]}">${b.state.replace("_"," ")}</div>
+  </div>`).join("");
+ $("#tm-agents").querySelectorAll("[data-b]").forEach(card=>{
+  card.onclick=()=>{closeTaskModal();selBot(byId[card.dataset.b])};
+ });
+ const rep=T.deliverable||(T.status==="running"?"Collaborating agents are executing subtasks, peer reviews, and synthesizing data...":(T.err||"No deliverable generated."));
+ $("#tm-deliverable").textContent=rep;
+ const taskEvents=store.events.filter(e=>e.task===tid).slice(-40).reverse();
+ $("#tm-events").innerHTML=taskEvents.length?taskEvents.map(e=>`
+  <div class="f">
+   <time style="color:var(--mut);margin-right:6px">${tm(e.ts)}</time>
+   <span>${esc(describe(e))}</span>
+  </div>`).join(""):`<div class="note">No logged events for this task yet.</div>`;
+ $("#tm-focus").onclick=()=>{closeTaskModal();selDept(T.dept)};
+ $("#tm-filter-feed").onclick=()=>{closeTaskModal();filter=T.dept;renderFeed();showSide(true)};
+ $("#tm-copy").onclick=()=>{
+  navigator.clipboard.writeText(`Task: ${T.text}\nDistrict: ${DN[T.dept]}\nStatus: ${T.status}\n\n${rep}`);
+  $("#tm-copy").textContent="Copied!";
+  setTimeout(()=>{$("#tm-copy").textContent="Copy report"},2000);
+ };
+}
+function closeTaskModal(){
+ activeTaskId=null;
+ $("#tm").style.display="none";
+ $("#tm-backdrop").style.display="none";
+}
+$("#tm-close").onclick=closeTaskModal;
+$("#tm-backdrop").onclick=closeTaskModal;
+
+/* ---------- camera + picking ---------- */
+const cam={th:.7,ph:.95,r:64,tx:0,ty:0,tz:0},ct={...cam};let sel=null,filter=null,follow=null;
+let drag=null;const el=R.domElement,ray=new THREE.Raycaster(),mv=new THREE.Vector2();
+const ptr=new Map();let pinch=0;const pd=()=>{const[a,b]=[...ptr.values()];return Math.hypot(a.x-b.x,a.y-b.y)};
+el.addEventListener("pointerdown",e=>{ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});el.setPointerCapture(e.pointerId);if(ptr.size===1)drag={m:0};else{drag={m:99};pinch=pd()}});
+addEventListener("pointermove",e=>{const p=ptr.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+ if(ptr.size>=2){const d1=pd();if(pinch>0&&d1>0)ct.r=Math.max(10,Math.min(140,ct.r*pinch/d1));pinch=d1;follow=null;const s=ct.r*.0006,cs=Math.cos(ct.th),sn=Math.sin(ct.th);ct.tx=Math.max(-130,Math.min(130,ct.tx-dx*s*cs-dy*s*sn));ct.tz=Math.max(-130,Math.min(130,ct.tz+dx*s*sn-dy*s*cs))}
+ else if(drag){drag.m+=Math.abs(dx)+Math.abs(dy);ct.th-=dx*.006;ct.ph=Math.max(.3,Math.min(1.35,ct.ph-dy*.006))}});
+el.addEventListener("pointerup",e=>{const was=ptr.size;ptr.delete(e.pointerId);if(drag&&drag.m<6&&was===1)pick(e);if(ptr.size<2)pinch=0;if(!ptr.size)drag=null});el.addEventListener("pointercancel",e=>{ptr.delete(e.pointerId);pinch=0;if(!ptr.size)drag=null});
+el.addEventListener("wheel",e=>{e.preventDefault();ct.r=Math.max(10,Math.min(140,ct.r*(1+e.deltaY*.001)))},{passive:false});
+function pick(e){mv.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1);ray.setFromCamera(mv,C);
+ let h=ray.intersectObjects(hits)[0];if(h)return selBot(h.object.userData.bot);
+ h=ray.intersectObjects(pads)[0];if(h)return selDept(h.object.userData.dept);clearSel()}
+function selBot(b){sel={bot:b};follow=b;ct.r=15;ct.ph=.9;dirty=true}
+function selDept(id){sel={dept:id};follow=null;const c=depts[id].c;ct.tx=c.x;ct.tz=c.z;ct.r=id==="command"?26:24;filter=id;renderFeed();dirty=true}
+function clearSel(){sel=null;follow=null;filter=null;renderFeed();dirty=true}
+$("#rv").onclick=()=>{clearSel();Object.assign(ct,{tx:0,tz:0,r:64,ph:.95})};
+
+/* ---------- UI ---------- */
+const lb=$("#labels");DEFS.forEach(d=>{const b=document.createElement("button");b.className="dl";b.dataset.d=d[0];b.onclick=()=>selDept(d[0]);lb.appendChild(b)});
+$("#fd").innerHTML=DEFS.map(d=>`<option value="${d[0]}">${d[1]}</option>`).join("");
+$("#fs").onclick=()=>{
+ const did=$("#fd").value,txt=$("#ft").value.trim()||$("#ft").placeholder,fail=$("#ff").checked;
+ $("#ft").value="";
+ run(did,txt,fail);
+};
+const tm=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+function describe(e){const a=byId[e.agent],t=byId[e.to],n=a?a.name:"";switch(e.type){
+ case"task.created":return"Task queued in "+DN[e.department]+": "+e.text;
+ case"task.assigned":return n+" ("+a.role+") received an assignment";
+ case"agent.started":return n+" started: "+(e.text||"");
+ case"agent.progress":return n+(e.text?": "+e.text:" reported progress");
+ case"agent.message_sent":return n+" → "+(t?t.name:"")+": "+e.text;
+ case"agent.handoff":return n+" handed off to "+(t?t.name:"")+": "+e.text;
+ case"agent.waiting_for_input":return n+" is waiting for input";
+ case"agent.review_started":return n+" started a review";
+ case"agent.completed":return n+" finished their part";
+ case"agent.recovered":return n+" recovered";
+ case"task.completed":return"Task completed in "+DN[e.department]+". "+(e.text||"");
+ case"task.failed":return"Task failed: "+e.text;default:return e.type}}
+function renderFeed(){const ev=store.events.filter(e=>!filter||e.department===filter).slice(-70).reverse();
+ $("#fh").textContent=filter?"Activity · "+DN[filter]:"Activity";
+ $("#feed").innerHTML=ev.length?ev.map(e=>`<div class="f"><time>${tm(e.ts)}</time>${esc(describe(e))}</div>`).join(""):'<div class="note">No activity yet. Submit a task to see agents collaborate.</div>'}
+function renderUI(){
+ const act=bots.filter(b=>b.task).length,run_=Object.values(store.tasks).filter(t=>t.status==="running"||t.status==="queued"||t.status==="waiting").length;
+ $("#ha").textContent=act;$("#ht").textContent=run_;
+ const ts=Object.values(store.tasks).sort((a,b)=>b.created-a.created).slice(0,6);
+ $("#tasks").innerHTML=ts.length?ts.map(t=>`
+  <div class="t" data-view-task="${t.id}">
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+    <span class="chip" style="${t.status==='done'?'border-color:#3ddc97;color:#3ddc97':t.status==='failed'?'border-color:#ff4d5e;color:#ff4d5e':''}">${t.status}</span>
+    <small style="color:var(--mut)">${DN[t.dept]}</small>
+   </div>
+   <div style="font-weight:600;margin-bottom:5px;line-height:1.3">${esc(t.text)}</div>
+   <div class="bar"><i style="width:${Math.round((t.progress||0)*100)}%"></i></div>
+   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px">
+    <span style="color:var(--acc);font-weight:600">Inspect full task & findings &rarr;</span>
+    ${t.status==="failed"?`<button class="g" style="padding:2px 7px" data-r="${t.id}">Retry</button>`:""}
+    ${t.status==="interrupted"?`<button class="g" style="padding:2px 7px" data-r="${t.id}">Run again</button>`:""}
+   </div>
+  </div>`).join(""):'<div class="note">No tasks yet.</div>';
+ $("#tasks").querySelectorAll(".t").forEach(el=>{
+  el.onclick=(e)=>{
+   if(e.target.closest("[data-r]"))return;
+   openTaskModal(el.dataset.viewTask);
+  };
+ });
+ $("#tasks").querySelectorAll("[data-r]").forEach(b=>b.onclick=(e)=>{e.stopPropagation();retry(b.dataset.r)});
+ lb.querySelectorAll(".dl").forEach(l=>{const D=depts[l.dataset.d];l.innerHTML=esc(D.name)+"<span>"+D.bots.filter(b=>b.task).length+"/6 busy</span>"});
+ const I=$("#info");if(!sel){I.style.display="none";return}I.style.display="block";
+ if(sel.bot){const b=sel.bot,T=store.tasks[b.task],dn=b.done.length;
+  I.innerHTML=`<h3>${b.name}</h3><div class="m">${b.role} · ${b.D.name} · ${b.trait}</div><div style="margin-top:8px"><span class="dot" style="background:${SC[b.state]}"></span>${b.state.replace("_"," ")}${b.ambient||(b.state==="idle"&&!b.task)?' <span class="chip">ambient, not work</span>':""}</div>
+  <div class="m" style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:6px">${T?`<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Task: ${esc(T.text)}</span> <button class="g" style="padding:2px 7px;font-size:10.5px;white-space:nowrap" data-vt="${T.id}">View task info</button>`:"No assigned task"}</div>
+  <h2 style="margin-top:10px">Recent messages</h2>${b.msgs.slice(-4).reverse().map(m=>`<div class="m">${m.from?"from "+m.from:"to "+m.to}: ${esc(m.text)}</div>`).join("")||'<div class="m">None yet</div>'}
+  <div class="m" style="margin-top:6px">Completed runs: ${Object.values(store.tasks).filter(t=>t.status==="done"&&t.dept===b.D.id).length} in this district</div>
+  <div class="r"><button id="ba">Assign task</button><button class="g" disabled title="Needs a chat backend">Direct chat</button>${b.state==="error"?`<button id="br">Retry task</button>`:""}</div>`;
+  I.querySelectorAll("[data-vt]").forEach(btn=>btn.onclick=()=>openTaskModal(btn.dataset.vt));
+  $("#ba").onclick=()=>{$("#fd").value=b.D.id;showSide(true);$("#ft").focus()};const br=$("#br");if(br)br.onclick=()=>{const t=Object.values(store.tasks).find(t=>t.failedAgent===b.id&&t.status==="failed");t&&retry(t.id)}}
+ else{const D=depts[sel.dept],busy=D.bots.filter(b=>b.task).length,tk=Object.values(store.tasks).filter(t=>t.dept===D.id&&["running","waiting","queued"].includes(t.status));
+  I.innerHTML=`<h3>${D.name}</h3><div class="m">${D.goal}</div><div class="m">${busy} busy · ${6-busy} available</div><div class="r">${D.bots.map(b=>`<button class="g" data-b="${b.id}"><span class="dot" style="background:${SC[b.state]}"></span>${b.name}</button>`).join("")}</div>
+  <h2 style="margin-top:10px">Collaborations</h2>${tk.map(t=>`<div class="m">${esc(t.text)}: ${t.agents.map(a=>byId[a].name).join(" → ")}</div>`).join("")||'<div class="m">None running</div>'}<div class="r"><button id="ba">Assign task here</button></div><div class="note">The activity feed is filtered to this district.</div>`;
+  I.querySelectorAll("[data-b]").forEach(x=>x.onclick=()=>selBot(byId[x.dataset.b]));$("#ba").onclick=()=>{$("#fd").value=D.id;showSide(true);$("#ft").focus()}}
+}
+/* ---------- loop ---------- */
+const fr=new THREE.Frustum(),mt=new THREE.Matrix4(),clock=new THREE.Clock(),TMP=new THREE.Vector3();
+const lineG=new THREE.BufferGeometry(),lp=new Float32Array(40*6);lineG.setAttribute("position",new THREE.BufferAttribute(lp,3));
+const lines=new THREE.LineSegments(lineG,new THREE.LineBasicMaterial({color:0xfff2a8,transparent:true,opacity:.9}));lines.frustumCulled=false;S.add(lines);
+const ACT=["working","thinking","collaborating","reviewing","transferring_data"];
+function size(){R.setSize(innerWidth,innerHeight);C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix()}addEventListener("resize",size);size();
+function ambient(b){const r=Math.random(),c=b.D.c;
+ if(r<.5){const a=Math.random()*6.28,d=Math.random()*6;go(b,{x:c.x+Math.cos(a)*d,z:c.z+Math.sin(a)*d},"idle",null,true)}
+ else if(r<.75){const k=c.clone().multiplyScalar(.5);go(b,{x:k.x+(Math.random()-.5)*5,z:k.z+(Math.random()-.5)*5},"idle",null,true)}
+ else{b.inspectNext=true;go(b,b.desk,"idle",b.scr,true)}}
+function stepBot(b,dt,t,vis){
+ const p=b.pos,tn=now();if(b.until&&tn>b.until){b.until=0;const f=b.after;b.after=null;f&&f()}
+ const dx=b.dest.x-p.x,dz=b.dest.z-p.z,d=Math.hypot(dx,dz);let sp=0;
+ if(d>.12){let vx=dx/d*b.speed*Math.min(1,d/1.2),vz=dz/d*b.speed*Math.min(1,d/1.2);
+  for(const o of bots){if(o===b)continue;const ox=p.x-o.pos.x,oz=p.z-o.pos.z,od=Math.hypot(ox,oz);if(od<1.1&&od>.001){const f=(1.1-od)*2.2;vx+=ox/od*f;vz+=oz/od*f}}
+  const k=Math.min(1,dt*6);b.vel.x+=(vx-b.vel.x)*k;b.vel.z+=(vz-b.vel.z)*k;p.x+=b.vel.x*dt;p.z+=b.vel.z*dt;sp=Math.hypot(b.vel.x,b.vel.z);if(sp>.2)b.yawT=Math.atan2(b.vel.x,b.vel.z)}
+ else{b.vel.set(0,0,0);if(b.state==="walking")arrive(b);if(b.face)b.yawT=Math.atan2(b.face.x-p.x,b.face.z-p.z)}
+ let dy=b.yawT-b.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));b.yaw+=dy*Math.min(1,dt*7);b.g.rotation.y=b.yaw;
+ if(!b.task&&b.state==="idle"&&!RM&&(b.amb-=dt)<=0){b.amb=8+Math.random()*16;ambient(b)}
+ if(!vis)return;const s=b.state,A=RM?.35:1,ph=b.ph;let hy=0,hz=0,al=0,ar=0,bob=0,ln=0;
+ if(sp>.2){bob=Math.abs(Math.sin(t*6+ph))*.06*A;al=Math.sin(t*6+ph)*.5*A;ar=-al}
+ else switch(s){
+  case"working":al=Math.sin(t*13+ph)*.35*A-.7;ar=Math.sin(t*13+ph+1.7)*.35*A-.7;ln=.1;break;
+  case"thinking":hy=Math.sin(t*.9+ph)*.3*A;hz=.2;ar=-2;break;
+  case"collaborating":ar=-1.1+Math.sin(t*3+ph)*.35*A;break;
+  case"transferring_data":al=ar=-1.4;break;
+  case"reviewing":hy=Math.sin(t*1.5+ph)*.5*A;ar=-.9;break;
+  case"celebrating":bob=Math.abs(Math.sin(t*6+ph))*.18*A;al=ar=-2.7;break;
+  case"error":ln=-.12;break;
+  default:bob=Math.sin(t*1.5+ph)*.012;hy=Math.sin(t*.6+ph)*.15*A;if(b.inspect>tn){hy=Math.sin(t*1.4)*.45*A;ar=-.9}}
+ const L=(o,k,v,r=.18)=>o[k]+=(v-o[k])*r;
+ L(b.hg.rotation,"y",hy);L(b.hg.rotation,"z",hz);L(b.arms[0],"x",al);L(b.arms[1],"x",ar);b.g.children[0].rotation.x+=(ln-b.g.children[0].rotation.x)*.15;b.hg.position.y=1.3+bob;
+ if(s==="thinking")b.dots.rotation.y=t*2.5;
+ const pu=1+(s==="error"||s==="waiting"?Math.sin(t*4)*.12:0);b.ring.scale.setScalar(pu);
+ if(s==="waiting")b.beacon.visible=Math.sin(t*5)>0;
+}
+function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
+ if(follow){ct.tx=follow.pos.x;ct.tz=follow.pos.z}
+ const k=Math.min(1,dt*4);for(const q in cam)cam[q]+=(ct[q]-cam[q])*k;
+ C.position.set(cam.tx+cam.r*Math.sin(cam.ph)*Math.sin(cam.th),cam.r*Math.cos(cam.ph),cam.tz+cam.r*Math.sin(cam.ph)*Math.cos(cam.th));C.lookAt(cam.tx,0,cam.tz);C.updateMatrixWorld();
+ mt.multiplyMatrices(C.projectionMatrix,C.matrixWorldInverse);fr.setFromProjectionMatrix(mt);
+ for(const b of bots){TMP.copy(b.pos);TMP.y=1;stepBot(b,dt,t,fr.containsPoint(TMP))}
+ for(let i=packets.length-1;i>=0;i--){const q=packets[i];q.t+=dt/1.3;const e=q.t<1?q.t*q.t*(3-2*q.t):1;q.m.position.lerpVectors(q.a,q.b.pos,e);q.m.position.y=1.6+Math.sin(Math.PI*e)*1.1;if(q.t>=1){S.remove(q.m);q.m.material.dispose();q.m.geometry.dispose();packets.splice(i,1)}}
+ /* shared-task connection lines + project-table holograms */
+ let n=0;for(const D of Object.values(depts)){let on=false;const m=D.bots.find(b=>b.idx===0&&b.task);
+  if(m){for(const b of D.bots){if(b===m||b.task!==m.task||!ACT.includes(b.state)||!ACT.includes(m.state)||n>=40)continue;on=true;lp.set([m.pos.x,1.5,m.pos.z,b.pos.x,1.5,b.pos.z],n*6);n++}}
+  D.holo.material.opacity+=((on||D.bots.some(b=>b.task)?.3:.06)-D.holo.material.opacity)*.05}
+ lineG.setDrawRange(0,n*2);lineG.attributes.position.needsUpdate=true;
+ if(!RM)clouds.rotation.y+=dt*.004;
+ for(const d of drones){d.p+=d.s*dt;d.m.position.set(Math.cos(d.p)*d.r,d.h+Math.sin(d.p*3)*.6,Math.sin(d.p)*d.r);d.m.rotation.y=t}
+ for(const s of streams){const a=s.pp;for(let i=0;i<90;i++){const lane=i%6,u=(s.off[i]+t*.08)%1,ang=lane*Math.PI/3;a[i*3]=Math.cos(ang)*(9+u*16);a[i*3+1]=.5;a[i*3+2]=Math.sin(ang)*(9+u*16)}s.sg.attributes.position.needsUpdate=true}
+ for(const l of lb.children){const D=depts[l.dataset.d];TMP.set(D.c.x,6,D.c.z).project(C);l.style.display=TMP.z>1?"none":"";l.style.transform=`translate(${(TMP.x*.5+.5)*innerWidth}px,${(-TMP.y*.5+.5)*innerHeight}px) translate(-50%,-100%)`}
+ if(dirty){dirty=false;renderUI()}
+ stepEnv(dt);R.render(S,C)}
+/* ---------- world mode: sun, sky, light and water follow a target ---------- */
+let mode="auto";const V=new THREE.Vector3(),TC=new THREE.Color(),WH=new THREE.Color(0xffffff);
+const MODES={
+morning:{sun:[-60,26,40],sc:0xffc98a,si:1.1,hs:0xffd9b0,hg:0x4a5a35,hi:.6,top:0x5a86c8,hor:0xffcfa0,fog:0xf0cfae,fd:.0075,ex:1.1,st:0,em:.2,wa:0x3a86b0},
+day:{sun:[70,62,42],sc:0xfff1d6,si:1.5,hs:0xbfdcff,hg:0x4a6a35,hi:.7,top:0x2159c7,hor:0xbcdbf5,fog:0xbcd8f0,fd:.0065,ex:1.15,st:0,em:.14,wa:0x2a7fb8},
+evening:{sun:[70,14,-50],sc:0xff8a4a,si:1.0,hs:0xffa27a,hg:0x3a3550,hi:.5,top:0x3b3f8f,hor:0xff9a5c,fog:0xe8a37e,fd:.008,ex:1.05,st:.1,em:.4,wa:0x3b6a9a},
+night:{sun:[-40,50,30],sc:0x8fb0ff,si:.5,hs:0x2a3a7a,hg:0x0c1220,hi:.5,top:0x040818,hor:0x172044,fog:0x0b1330,fd:.009,ex:1.0,st:1,em:.9,wa:0x14305a}};
+const CK=["sc","hs","hg","top","hor","fog","wa"],NK=["si","hi","fd","ex","st","em"],E={sun:new THREE.Vector3(...MODES.day.sun)};
+CK.forEach(q=>E[q]=new THREE.Color(MODES.day[q]));NK.forEach(q=>E[q]=MODES.day[q]);
+const hourMode=()=>{const h=new Date().getHours();return h<5?"night":h<9?"morning":h<17?"day":h<20?"evening":"night"};
+function stepEnv(dt){const nd=new Date(),T=modeAt(mode==="auto"?nd.getHours()+nd.getMinutes()/60:hourM),k=Math.min(1,dt*1.6);
+ E.sun.lerp(V.set(...T.sun),k);CK.forEach(q=>E[q].lerp(TC.set(T[q]),k));NK.forEach(q=>E[q]+=(T[q]-E[q])*k);
+ dl.position.copy(E.sun).setLength(105);dl.color.copy(E.sc);dl.intensity=E.si;HL.color.copy(E.hs);HL.groundColor.copy(E.hg);HL.intensity=E.hi;
+ const u=sky.material.uniforms;u.sd.value.copy(E.sun).normalize();u.top.value.copy(E.top);u.hor.value.copy(E.hor);u.sc.value.copy(E.sc);
+ S.fog.color.copy(E.fog);S.fog.density=E.fd;R.toneMappingExposure=E.ex;stars.material.opacity=E.st;stars.visible=E.st>.02;
+ EMS.forEach(m=>m.emissiveIntensity=E.em);CM.color.copy(E.hor).lerp(WH,.55);CM.opacity=.35+.45*Math.min(1,E.si/1.1);WM.color.copy(E.wa);
+ if(!RM){WT.offset.y-=dt*.035;WT.offset.x+=dt*.01}syncTime()}
+
+const wm=$("#wm"),PRE={morning:8,day:13,evening:18,night:23};let hourM=13;
+wm.innerHTML='<button class="g" id="wt" aria-expanded="true">Time of day · <span id="wl"></span></button><div id="wb"><div class="wr"></div><input type="range" id="ws" min="0" max="24" step="0.1" value="13" aria-label="Time of day"></div>';
+const wl=$("#wl"),tsl=$("#ws"),wr=wm.querySelector(".wr"),KF=[[0,"night"],[6,"morning"],[12,"day"],[18,"evening"],[21,"night"],[24,"night"]];
+function modeAt(h){let i=0;while(i<KF.length-2&&h>=KF[i+1][0])i++;const[h0,a]=KF[i],[h1,b]=KF[i+1],f=(h-h0)/(h1-h0),A=MODES[a],B=MODES[b],T={sun:A.sun.map((v,j)=>v+(B.sun[j]-v)*f)};
+ CK.forEach(q=>T[q]=new THREE.Color(A[q]).lerp(new THREE.Color(B[q]),f));NK.forEach(q=>T[q]=A[q]+(B[q]-A[q])*f);return T}
+function syncTime(){const nd=new Date(),h=mode==="auto"?nd.getHours()+nd.getMinutes()/60:hourM,hh=Math.floor(h),s=String(hh).padStart(2,"0")+":"+String(Math.floor((h-hh)*60)).padStart(2,"0")+(mode==="auto"?" (live)":"");if(wl.textContent!==s){wl.textContent=s;if(mode==="auto")tsl.value=h}}
+function mark(m){wr.querySelectorAll("button").forEach(b=>{const on=b.dataset.m===m;b.setAttribute("aria-pressed",on);b.style.background=on?"var(--acc)":"";b.style.color=on?"#fff":""})}
+function setMode(m){if(m==="auto")mode="auto";else{mode="manual";hourM=PRE[m];tsl.value=hourM}mark(m)}
+["auto","morning","day","evening","night"].forEach(m=>{const b=document.createElement("button");b.className="g";b.dataset.m=m;b.textContent=m[0].toUpperCase()+m.slice(1);b.onclick=()=>setMode(m);wr.appendChild(b)});
+tsl.oninput=()=>{mode="manual";hourM=+tsl.value;mark("")};
+$("#wt").onclick=()=>{const c=wm.classList.toggle("c");$("#wt").setAttribute("aria-expanded",!c)};setMode("auto");
+/* collapsible task panel, zoom buttons, mobile defaults */
+const sb=$("#sb"),side=$("#side");
+function showSide(on){side.classList.toggle("hide",!on);document.body.classList.toggle("sh",!on);sb.setAttribute("aria-expanded",on);sb.textContent=on?"Hide panel":"Tasks & feed"}
+sb.onclick=()=>showSide(side.classList.contains("hide"));
+$("#zi").onclick=()=>ct.r=Math.max(10,ct.r*.8);$("#zo").onclick=()=>ct.r=Math.min(140,ct.r*1.25);
+if(innerWidth<=820){showSide(false);wm.classList.add("c");$("#wt").setAttribute("aria-expanded",false)}
+renderFeed();frame();setInterval(()=>{if(sel&&sel.bot)dirty=true},1500);
+</script>
+</body>
+</html>
